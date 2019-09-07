@@ -56,8 +56,8 @@ EOT;
         $grid->nickname('昵称')->editable();
         $grid->sign('个性签名')->editable();
         $status = [
-            'on'  => ['value' => 1, 'text' => '女', 'color' => 'warning'],
-            'off' => ['value' => 2, 'text' => '男', 'color' => 'success'],
+            'on'  => ['value' => 2, 'text' => '女', 'color' => 'warning'],
+            'off' => ['value' => 1, 'text' => '男', 'color' => 'success'],
         ];
         $grid->column('sex', '性别')->switch($status);
         $grid->age('年龄')->sortable()->editable();
@@ -203,7 +203,8 @@ EOT;
         $show->field('region_id', __('Region id'));
         $show->field('sign', '签名');
         $show->field('sex', '性别')->as(function($sex_id){
-            return $sex_id == 1 ? '女' :  '男';
+            if ($sex_id == 2) return '女';
+            if ($sex_id == 1) return '男';
         });
         $show->field('age', '年龄');
         $show->field('born', '生日');
@@ -252,8 +253,8 @@ EOT;
         $form->text('age', '年龄')->rules('required|numeric');
         $form->text('phone', '手机')->rules('required|numeric');
         $form->switch('sex', '性别')->states([
-            'on'  => ['value' => 1, 'text' => '女', 'color' => 'warning'],
-            'off' => ['value' => 2, 'text' => '男', 'color' => 'success'],
+            'on'  => ['value' => 2, 'text' => '女', 'color' => 'warning'],
+            'off' => ['value' => 1, 'text' => '男', 'color' => 'success'],
         ]);
         $form->switch('job', '职业')->states([
             'on'  => ['value' => 1, 'text' => '学生', 'color' => 'warning'],
