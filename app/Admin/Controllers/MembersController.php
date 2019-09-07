@@ -109,7 +109,7 @@ EOT;
             })
         ->expand(function($model){
             $Member = Members::where('id', $this->id)->with(['posts'=>function($query){
-                $query->orderby('id', 'descc')->take(10)->select('*');
+                $query->orderby('id', 'desc')->take(10)->select('*');
             }])->first();
               $data = [];
               if ($Member->posts) {
