@@ -15,6 +15,38 @@ class Members extends Model
     protected $fillable = [
         'phone',
         'password',
+        'name',
+        'avatar_image_id',
+        'email',
+        'email_verified_at',
+        'password',
+        'remember_token',
+        'nickname',
+        'region_id',
+        'sign',
+        'sex',
+        'age',
+        'born',
+        'job',
+        'weixin',
+        'phone',
+        'phone_verified_at',
+        'phone_verified_code',
+        'school',
+        'department',
+        'professional',
+        'education_id',
+        'start_school_at',
+        'hobby',
+        'next_plan',
+        'status',
+        'balance',
+        'weixin_expires_in',
+        'weixin_refresh_token',
+        'weixin_access_token',
+        'weixin_access_token_at',
+        'weixin_openid',
+        'weixin_unionid'
     ];
     public $timestamps = false;
 
@@ -81,6 +113,13 @@ class Members extends Model
     {
         return $this->belongsToMany(Posts::class, 'favorites', 'member_id', 'post_id');
     }
+    
+    protected static function boot()
+    {
+        parent::boot();
 
+        static::saving(function($Member) {
+        });
+    }
 }
 

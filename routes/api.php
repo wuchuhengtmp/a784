@@ -31,4 +31,7 @@ $api->version('v1', [
     // 用户注册
     $api->post('members', 'MembersController@store')
         ->name('api.members.store');
+    // 第三方登录
+    $api->post('socials/{social_type}/authorizations', 'AuthorizationsController@socialStore')
+        ->name('api.socials.authorizations.store');
 });
