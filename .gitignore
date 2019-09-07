@@ -14,3 +14,5 @@ tags
 tag
 .tags
 .tag
+*.swp
+*.swo
