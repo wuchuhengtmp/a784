@@ -12,6 +12,10 @@ use App\Models\Favorites;
 
 class Members extends Model
 {
+    protected $fillable = [
+        'phone',
+        'password',
+    ];
     public $timestamps = false;
 
     /**
