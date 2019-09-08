@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Posts;
 use App\Models\Images;
-sue App\Models\Members;
+use App\Models\Members;
 use App\Models\PostLikes;
 use App\Models\Comments;
 use App\Models\Tags;
