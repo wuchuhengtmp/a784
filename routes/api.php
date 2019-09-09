@@ -13,9 +13,9 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
+/* Route::middleware('auth:api')->get('/user', function (Request $request) { */
+/*     return $request->user(); */
+/* }); */
 
 
 
@@ -34,4 +34,7 @@ $api->version('v1', [
     // 第三方登录
     $api->post('socials/{social_type}/authorizations', 'AuthorizationsController@socialStore')
         ->name('api.socials.authorizations.store');
+    // 登录
+    $api->post('authorizations', 'AuthorizationsController@store')
+        ->name('api.authorizations.store');
 });

@@ -6,11 +6,12 @@ use Illuminate\Http\Request;
 use App\Http\Requests\Api\SocialAuthorizationRequest;
 use App\Models\Members;
 use App\Models\Images;
+use App\Http\Requests\Api\AuthorizationRequest;
 
 class AuthorizationsController extends Controller
 {
     /**
-     * 用户授权
+     * 微信登录授权
      *
      */    
     public function socialStore($type, SocialAuthorizationRequest $request)
@@ -52,16 +53,37 @@ class AuthorizationsController extends Controller
                     $Member->weixin_openid = $oauthUser->getId();
                     $Member->weixin_unionid = $unionid;
                     $Member->weixin_access_token = $token;
-                    $Images = new Images();
-                    $Images->url = $oauthUser->getAvatar();
-                    $Images->from = 2;
-                    $Images->create();
+                    $Images = Images::create([
+                        'from' => 2,
+                        'url'  => $oauthUser->getAvatar()
+                    ]);
                     $Member->avatar_image_id = $Images->id;
                     $Member->save();
-                    
                 }
                 break;
         }
         return $this->response->array(['token' => $member->id]);
     } 
+
+
+    /**
+     * 手机登录授权
+     *
+     *
+     */
+    public function store(AuthorizationRequest $request)
+    {
+        $credentials['phone'] = $request->phone;
+        $credentials['password'] = $request->password;
+        if (!$token = \Auth::guard('api')->attempt($credentials)) {
+            return $this->response->errorUnauthorized('用户名或密码错误');
+        }
+
+        dd($request->toArray());
+        return $this->response->array([
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'expires_in' => \Auth::guard('api')->factory()->getTTL() * 60
+        ])->setStatusCode(201);
+    }
 }

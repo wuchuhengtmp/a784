@@ -7,10 +7,12 @@ use App\Models\Images;
 use App\Models\Region;
 use App\Models\Educations;
 use App\Models\Posts;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 use App\Models\MemberFollow;
 use App\Models\Favorites;
+//use \Illuminate\Contracts\Auth\Authenticatable
 
-class Members extends Model
+class Members extends Model implements JWTSubject
 {
     protected $fillable = [
         'phone',
@@ -112,6 +114,17 @@ class Members extends Model
     public function favorites() : object
     {
         return $this->belongsToMany(Posts::class, 'favorites', 'member_id', 'post_id');
+    }
+
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
     }
     
     protected static function boot()
