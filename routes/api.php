@@ -28,13 +28,28 @@ $api->version('v1', [
     // 短信验证码
     $api->post('verificationCodes', 'VerificationCodesController@store')
         ->name('api.verificationCodes.store');
+    // 重置用户密码短信验证码
+    $api->post('verificationMemberCodes', 'VerificationCodesController@update')
+        ->name('api.verificationCodes.ResetPassword');
     // 用户注册
     $api->post('members', 'MembersController@store')
         ->name('api.members.store');
+    // 重置密码
+    $api->patch('members', 'MembersController@update')
+        ->name('api.members.update');
+    // 微信获取openid
+    $api->get('socials/{social_type}/appid', 'AuthorizationsController@getAppid')
+        ->name('api.socials.authorizations.openid');
     // 第三方登录
     $api->post('socials/{social_type}/authorizations', 'AuthorizationsController@socialStore')
         ->name('api.socials.authorizations.store');
     // 登录
     $api->post('authorizations', 'AuthorizationsController@store')
         ->name('api.authorizations.store');
+    // 刷新token
+    $api->put('authorizations/current', 'AuthorizationsController@update')
+        ->name('api.authorizations.update');
+     // 删除token
+    $api->delete('authorizations/current', 'AuthorizationsController@destroy')
+        ->name('api.authorizations.destroy');
 });
