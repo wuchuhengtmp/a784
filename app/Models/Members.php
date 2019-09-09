@@ -3,17 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Images;
-use App\Models\Region;
-use App\Models\Educations;
-use App\Models\Posts;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
-use App\Models\MemberFollow;
-use App\Models\Favorites;
-//use \Illuminate\Contracts\Auth\Authenticatable
 
-class Members extends Model implements JWTSubject
+class Members extends Authenticatable implements JWTSubject
 {
+    public $table = 'members';
+
+    /* use  Notifiable; */
     protected $fillable = [
         'phone',
         'password',
@@ -64,7 +61,7 @@ class Members extends Model implements JWTSubject
     /**
      * 关联头像
      *
-     */ 
+     */
     public function avatar()
     {
         return $this->hasOne(Images::class, 'id', 'avatar_image_id');
@@ -109,7 +106,7 @@ class Members extends Model implements JWTSubject
 
     /**
      * 关联他的收藏
-     *  
+     *
      */
     public function favorites() : object
     {
@@ -117,16 +114,26 @@ class Members extends Model implements JWTSubject
     }
 
 
+    /**
+     * Get the identifier that will be stored in the subject claim of the JWT.
+     *
+     * @return mixed
+     */
     public function getJWTIdentifier()
     {
         return $this->getKey();
     }
 
+    /**
+     * Return a key value array, containing any custom claims to be added to the JWT.
+     *
+     * @return array
+     */
     public function getJWTCustomClaims()
     {
         return [];
     }
-    
+
     protected static function boot()
     {
         parent::boot();

@@ -13,7 +13,7 @@ class AuthorizationsController extends Controller
     /**
      * 微信登录授权
      *
-     */    
+     */
     public function socialStore($type, SocialAuthorizationRequest $request)
     {
         if (!in_array($type, ['weixin'])) {
@@ -62,8 +62,10 @@ class AuthorizationsController extends Controller
                 }
                 break;
         }
-        return $this->response->array(['token' => $member->id]);
-    } 
+        
+        $token=\Auth::guard('api')->fromUser($member);
+        return $this->respondWithToken($token);
+    }
 
 
     /**
@@ -75,15 +77,26 @@ class AuthorizationsController extends Controller
     {
         $credentials['phone'] = $request->phone;
         $credentials['password'] = $request->password;
-        if (!$token = \Auth::guard('api')->attempt($credentials)) {
+
+        if (!$token = auth('api')->attempt($credentials)) {
+
             return $this->response->errorUnauthorized('用户名或密码错误');
         }
 
-        dd($request->toArray());
+        return $this->respondWithToken($token);
+    }
+
+
+    /**
+     * 生成token
+     *
+     */
+    protected function respondWithToken($token)
+    {
         return $this->response->array([
             'access_token' => $token,
             'token_type' => 'Bearer',
             'expires_in' => \Auth::guard('api')->factory()->getTTL() * 60
-        ])->setStatusCode(201);
+        ]);
     }
 }
