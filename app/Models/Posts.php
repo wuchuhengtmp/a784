@@ -10,6 +10,8 @@ use App\Models\Members;
 use App\Models\PostLikes;
 use App\Models\Comments;
 use App\Models\Tags;
+use App\Models\Answers;
+use App\Models\AnswerComments;
 
 class Posts extends Model
 {
@@ -70,11 +72,34 @@ class Posts extends Model
         return $this->hasOne(Tags::class, 'id', 'tag_id');
     }
 
+    /**
+     * 回答关联
+     *
+     */
+    public function answers()
+    {
+        return $this->hasMany(Answers::class, 'post_id', 'id');
+    }
+
+    /**
+     * 关联问题评论
+     *
+     */
+    public function answerComments()
+    {
+        return $this->hasManyThrough(
+            AnswerComments::class,
+            Answers::class,
+            'post_id',   
+            'answer_id',
+            'id',
+            'id'
+        ) ;
+    }
 
     protected static function boot()
     {
         parent::boot();
-
         static::deleting(function($post) {
              $post->images()->delete();
              $post->comments()->delete();

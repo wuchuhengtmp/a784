@@ -51,8 +51,8 @@ class ArticlesController extends AdminController
                return $model['nickname']; 
             });
         $grid->column('status', '审核状态')->switch( [ 
-            'on'  => ['value' => 0, 'text' => '禁止', 'color' => 'primary'],
-            'off' => ['value' => 1, 'text' => '通过', 'color' => 'default']
+            'off'  => ['value' => 0, 'text' => '禁止', 'color' => 'primary'],
+            'on' => ['value' => 1, 'text' => '通过', 'color' => 'default']
         ]);
         $grid->column('likes', '点赞')
             ->display(function($model){
@@ -142,8 +142,8 @@ class ArticlesController extends AdminController
     {
         $form = new Form(new Posts);
         $form->switch('status', '审核状态')->states( [ 
-            'on'  => ['value' => 0, 'text' => '禁止', 'color' => 'primary'],
-            'off' => ['value' => 1, 'text' => '通过', 'color' => 'default']
+            'off'  => ['value' => 0, 'text' => '禁止', 'color' => 'primary'],
+            'on' => ['value' => 1, 'text' => '通过', 'color' => 'default']
         ]);
         return $form;
     }

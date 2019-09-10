@@ -39,7 +39,6 @@ class MembersController extends AdminController
         $grid->disableCreateButton();
         //$grid->disableActions();
         $grid->filter(function($filter){
-            // 在这里添加字段过滤器
             $filter->between('created_at', '创建时间')->datetime();
             $filter->like('nickname', '昵称')->placeholder('请输入昵称');
             $filter->equal('phone', '手机号码')->placeholder('请输入手机号码');

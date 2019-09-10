@@ -14,4 +14,7 @@ Route::group([
     $router->resource('levels', LevelsController::class);
     $router->resource('videos', videosController::class);
     $router->resource('articles', ArticlesController::class);
+    $router->resource('answers', AnswersController::class);
+    $router->resource('journal-logs', JournalAccountController::class);
+    $router->resource('feedback', FeedbackController::class);
 });

@@ -3,21 +3,21 @@
 namespace App\Admin\Controllers;
 
 use App\Models\Posts;
+use App\Models\Members;
 use Encore\Admin\Controllers\AdminController;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Show;
 use Encore\Admin\Widgets\Table;
-use Illuminate\Support\Facades\DB;
 
-class videosController extends AdminController
+class AnswersController extends AdminController
 {
     /**
      * Title for current resource.
      *
      * @var string
      */
-    protected $title = '视频';
+    protected $title = '问答管理';
 
     /**
      * Make a grid builder.
@@ -27,14 +27,14 @@ class videosController extends AdminController
     protected function grid()
     {
         $grid = new Grid(new Posts);
+        $grid->model()->where('content_type', 3);
+
         $grid->actions(function ($actions) {
             $actions->disableEdit();
             $actions->disableView();
         });
         $grid->disableCreateButton();
-        $grid->model()->where('content_type', 1);
-        $grid->model()->orderBy('id', 'desc');
-        $grid->column('id', 'ID');
+        $grid->column('id', 'Id');
         $grid->column('images','封面图片')->display(function($model){
             $html = '';
             $data = Posts::where('id', $this->id)->with('images')->first();
@@ -45,47 +45,41 @@ class videosController extends AdminController
             }
             return $html;
         });
-        $grid->column('title', '标题')->editable();
-        $grid->column('video_url', '视频')->display(function($model){
-            $html =  "<video width='180' height='120' controls='controls'>
-                <source src=".$this->video_url." type='video/mp4' />
-                <source src=".$this->video_url." type='video/ogg'>
-                <source src=".$this->video_url." type='video/webm' />
-                <object data=".$this->video_url." width='180'  height='120'>
-                <embed src=".$this->video_url." width='180'  height='120' />
-                </object>
-                </video>";
-            return $html;
-        });
-        $grid->column('member', '发布用户')
-            ->display(function($model){
+        $grid->column('title', '问题')->width(200)->limit(25);
+        $grid->column('answers', '回答')->display(function(){
+                return count($this->answers);
+            })
+            ->expand(function($model){
+                $data = [];
+                if ($this->answers) {
+                    foreach($this->answers as $el) {
+                        $tmp['id']  =  $el->id;
+                        $tmp['name'] = Members::find($el->member_id)->nickname;
+                        $tmp['content'] = $el->content;
+                        $tmp['created_at'] = $el->created_at;
+                        $data[] = $tmp;
+                    }
+                } 
+                return new  Table(['ID', '昵称', '内容', '时间'], $data);
+            }); 
+        $grid->column('member', '发布人')
+            ->display(function($model) {
                return $model['nickname']; 
             });
         $grid->column('status', '审核状态')->switch( [ 
             'off'  => ['value' => 0, 'text' => '禁止', 'color' => 'primary'],
             'on' => ['value' => 1, 'text' => '通过', 'color' => 'default']
         ]);
-        $grid->column('likes', '点赞')
-            ->display(function($model){
-                return count($this->likes);
-            })
-            ->expand(function($model){
-                $hasLikes = $model->likes->take(10)->map(function($query){
-                    return $query->only(['id', 'nickname']);
-                });
-                $data = $hasLikes->isEmpty() ? [] : $hasLikes->toArray();
-                return new Table(['ID', '昵称'], $data);
-            });
         $grid->column('commants','评论数')->display(function(){
-                return count($this->comments);
+                return $this->answerComments ? count($this->answerComments) : 0;
             })
             ->expand(function($model){
-                $comments  = $this->comments->take(10)->where('pid', 0);
+                $comments  = $this->answerComments->take(10);
                 $data = [];
                 if (!$comments->isEmpty()) {
                     foreach($comments as $el) {
                         $tmp['id'] = $el->id; 
-                        $tmp['nickname'] = $el->member->name;
+                        $tmp['nickname'] = $el->member->nickname;
                         $tmp['content'] = $el->content;
                         $tmp['created_at'] = $el->created_at->toArray()['formatted'];
                         $data[] = $tmp;
@@ -93,20 +87,6 @@ class videosController extends AdminController
                 }
                 return new  Table(['ID', '昵称', '内容', '时间'], $data);
             });
-        $grid->column('favorites', '收藏')->display(function($model){
-            return count($this->favorites) ;
-            })
-            ->expand(function($model){
-                $data = [];
-                if ($this->favorites) {
-                    foreach($this->favorites as $el) {
-                        $tmp['id'] = $el->id;
-                        $tmp['nickname'] = $el->nickname;
-                        $data[] = $tmp;
-                    }
-            }
-            return new Table(['id', '昵称'], $data);
-        });
         $grid->column('tag_id', '分类')->display(function(){
              return $this->tag->name;
         })->label([
@@ -136,8 +116,10 @@ class videosController extends AdminController
         $show->field('video_url', 'Video url');
         $show->field('content_type', 'Content type');
         $show->field('member_id', 'Member id');
+        $show->field('status', 'Status');
         $show->field('created_at', 'Created at');
         $show->field('updated_at', 'Updated at');
+        $show->field('deleted_at', 'Deleted at');
 
         return $show;
     }
@@ -150,19 +132,10 @@ class videosController extends AdminController
     protected function form()
     {
         $form = new Form(new Posts);
-
-        $form->text('title', 'Title');
-        $form->text('content', 'Content');
-        $form->text('video_url', 'Video url');
         $form->switch('status', '审核状态')->states( [ 
             'off'  => ['value' => 0, 'text' => '禁止', 'color' => 'primary'],
             'on' => ['value' => 1, 'text' => '通过', 'color' => 'default']
         ]);
-        $form->number('content_type', 'Content type');
-        $form->number('member_id', 'Member id');
         return $form;
     }
-
-
-    
 }

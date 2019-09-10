@@ -3,10 +3,31 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Members;
+use App\Models\AccountTransferType;
 
 class AccountLogs extends Model
 {
     protected $table = 'account_logs';
+
+
+    /**
+     *  关联用户
+     *
+     */
+    public function member()
+    {
+        return $this->hasOne(Members::class, 'id', 'member_id');
+    }
+
+    /**
+     *  支付方式
+     *
+     */
+    public function transferType()
+    {
+        return $this->hasOne(AccountTransferType::class, 'id', 'transfer_type_id');
+    }
 
     /**
      * 计算区间时间最大的一笔支出
