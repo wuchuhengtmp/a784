@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\Api\MembersRequest;
 use App\Http\Requests\Api\VerificationMemberInfoRequest ;
 use App\Models\Members;
+use App\Transformers\MemberTransformer;
 
 class MembersController extends Controller
 {
@@ -55,6 +56,16 @@ class MembersController extends Controller
         // 清除验证码缓存
         \Cache::forget($request->verification_key);
         return $this->response->created();
+    }
+
+    /**
+     *  用户个人信息
+     *
+     *
+     */
+    public function me()
+    {
+        return $this->response->item($this->user(), new MemberTransformer());
     }
 }
 

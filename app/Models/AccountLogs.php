@@ -45,8 +45,9 @@ class AccountLogs extends Model
         $end = date('Y-m-d H:i:s', $end);
         $has_data = self::
         whereBetween('created_at', ["$start", "$end"])
-            ->Where('uid', $id)
-            ->Where('is_third_party_transfer', 1)
+            ->Where('member_id', $id)
+            ->Where('is_out_transaction', 1)
+            ->Where('is_transfer_out', 0)
             ->orderby('money', 'desc')
             ->first();
         if ($has_data)

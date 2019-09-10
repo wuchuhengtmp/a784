@@ -54,9 +54,9 @@ $api->version('v1', [
         ->name('api.authorizations.destroy');
 
      // 需要 token 验证的接口
-        $api->group(['middleware' => 'api.auth'], function($api) {
-            // 当前登录用户信息
-            $api->get('member', 'membersController@me')
-                ->name('api.member.show');
-        });
+    $api->group(['middleware' => 'api.auth'], function($api) {
+        // 当前登录用户信息
+        $api->get('member', 'MembersController@me')
+            ->name('api.member.show');
+    });
 });

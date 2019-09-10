@@ -2,12 +2,12 @@
 
 namespace App\Transformers;
 
-use App\Models\Members as Member;
+use App\Models\Members;
 use League\Fractal\TransformerAbstract;
 
 class MemberTransformer extends TransformerAbstract
 {
-    public function transform(Member $user)
+    public function transform(Members $user)
     {
         return [
             'id' => $user->id,
