@@ -15,9 +15,9 @@ class MembersController extends Controller
      *
      * @http post
      */
-    public function store(MembersRequest $request)
+    public function store(VerificationMemberInfoRequest $request)
     {
-         $verifyData = \Cache::get($request->verification_key);
+        $verifyData = \Cache::get($request->verification_key);
         if (!$verifyData) {
             return $this->response->error('验证码已失效', 422);
         }
@@ -32,7 +32,7 @@ class MembersController extends Controller
 
         // 清除验证码缓存
         \Cache::forget($request->verification_key);
-        return $this->response->created();
+        return $this->responseSuccess();
     }
 
 
@@ -42,7 +42,7 @@ class MembersController extends Controller
      */
     public function update(VerificationMemberInfoRequest $request)
     {
-         $verifyData = \Cache::get($request->verification_key);
+        $verifyData = \Cache::get($request->verification_key);
         if (!$verifyData) {
             return $this->response->error('验证码已失效', 422);
         }
@@ -55,17 +55,44 @@ class MembersController extends Controller
         $Member->save();
         // 清除验证码缓存
         \Cache::forget($request->verification_key);
-        return $this->response->created();
+        return $this->responseSuccess();
     }
 
     /**
      *  用户个人信息
      *
-     *
      */
     public function me()
     {
         return $this->response->item($this->user(), new MemberTransformer());
+    }
+
+    /**
+     *  游客信息
+     *
+     */
+    public function show(Members $Member, Request $Request)
+    {
+        $Member            = $Member->where('id', $Request->member_id)
+            ->withCount([
+                'postLikes',
+                'commentLikes',
+                'favorites'
+            ])
+            ->first();
+        if (!$Member) return $this->responseError();
+        $data['avatar']          = $this->transferUrl($Member->avatar->url);
+        $data['nickname']        = $Member->nickname;
+        $data['level']           = Members::getlevelInfoByMemberId($Member->id)->name ?? null;
+        $data['sign']            = $Member->sign;
+        $data['sex']             = $Member->sex;
+        $data['job']             = $Member->job_name;
+        $data['school']          = $Member->school;
+        $data['education']       = $Member->education->name;
+        $data['professional']    = $Member->professional;
+        $data['likes']           = $Member->post_likes_count + $Member->comment_likes_count;
+        $data['count_favorites'] = $Member->favorites_count;
+        dd($data);
     }
 }
 

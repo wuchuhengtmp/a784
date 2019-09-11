@@ -10,6 +10,8 @@ use App\Models\Members;
 class Comments extends Model
 {
     use  SoftDeletes;
+
+    protected $hidden = ['deleted_at', 'pid', 'path', 'updated_at', 'post_id'];
     /**
      *  关联用户信息
      *

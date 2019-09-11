@@ -51,5 +51,7 @@ $app->singleton(
 | from the actual running of the application and sending responses.
 |
 */
+// 公共函数
+require __DIR__ . '/common.php';
 
 return $app;

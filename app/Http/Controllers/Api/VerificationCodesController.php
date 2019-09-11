@@ -20,7 +20,7 @@ class VerificationCodesController extends Controller
         $phone =  $request->phone;
         // 生成5位随机数，左侧补0
         $code = str_pad(random_int(1, 99999), 5, 0, STR_PAD_LEFT);
-
+        if (env('APP_DEBUG')) $code = "12345";
         try {
             $result = $easySms->send($phone, [
                 'content' => "您的验证码是{$code}。如非本人操作，请忽略本短信"
@@ -34,10 +34,10 @@ class VerificationCodesController extends Controller
         // 缓存验证码 10分钟过期。
         $expired_at = now()->addMinutes(10);
         \Cache::put($key, ['phone' => $phone, 'code' => $code], $expired_at);
-        return $this->response->array([
+        return $this->responseData([
             'key' => $key,
             'expired_at' => $expired_at->toDateTimeString(),
-        ])->setStatusCode(201);
+        ]);
     }
 
 
@@ -67,10 +67,10 @@ class VerificationCodesController extends Controller
         // 缓存验证码 10分钟过期。
         $expired_at = now()->addMinutes(10);
         \Cache::put($key, ['phone' => $phone, 'code' => $code], $expired_at);
-        return $this->response->array([
+        return $this->responseData([
             'key' => $key,
             'expired_at' => $expired_at->toDateTimeString(),
-        ])->setStatusCode(201);
+        ]);
     }
 
 }

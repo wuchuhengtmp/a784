@@ -5,12 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use App\Models\{
+    Posts,
+    PostLikes,
+    CommentLikes,
+    Comments,
+    Favorites
+};
 
 class Members extends Authenticatable implements JWTSubject
 {
     public $table = 'members';
-
-    /* use  Notifiable; */
+    protected $appends = ['job_name'];    /* use  Notifiable; */
     protected $fillable = [
         'phone',
         'password',
@@ -141,5 +147,72 @@ class Members extends Authenticatable implements JWTSubject
         static::saving(function($Member) {
         });
     }
+
+    /**
+     *  job字段以数字1学生2老师读取转换
+     *
+     *
+     */
+    public function getJobNameAttribute()
+    {
+        if ($this->job == 1) 
+            return '学生';
+        else if ($this->job == 2) 
+            return '老师';
+    } 
+
+    /*
+     *  会员等级
+     *
+     * @membe_id    会员id
+     * @return       mix 
+     */ 
+    public static function getlevelInfoByMemberId(int $member_id) 
+    {
+        $money = AccountLogs::getMaxBetweenTimeByUid($member_id,  time() - 60*60*24*365);
+        $fans = MemberFollow::countFansBYUid($member_id);
+        $has_level = Levels::getLevelByFansAndMony($fans, $money);
+        return $has_level;
+    }
+
+    /**
+    * 关联用户资源点赞
+    *
+    */
+    public function postLikes()
+    {
+        return $this->hasManyThrough(
+            PostLikes::class, 
+            Posts::class,
+            'member_id', 
+            'post_id', 
+            'id', 
+            'id' 
+        );
+    }
+
+    /**
+     * 关联用户评论点赞
+     *
+     */
+    public function commentLikes()
+    {
+        return $this->hasManyThrough(
+            CommentLikes::class,
+            Comments::class,
+            'member_id',
+            'comment_id',
+            'id',
+            'id'
+        );
+    }
+
+    /* 
+     * 关注 
+     */ 
+    /* public function favorites() */
+    /* { */
+    /*     return $this->hasMany(Favorites::class, 'member_id', 'id'); */
+    /* } */
 }
 

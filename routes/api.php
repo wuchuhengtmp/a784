@@ -23,7 +23,8 @@ use Illuminate\Http\Request;
 $api = app('Dingo\Api\Routing\Router');
 
 $api->version('v1', [
-    'namespace' => 'App\Http\Controllers\Api'
+    'namespace' => 'App\Http\Controllers\Api',
+    /* 'middleware' => 'serializer:array' */
 ], function($api) {
     // 短信验证码
     $api->post('verificationCodes', 'VerificationCodesController@store')
@@ -55,8 +56,15 @@ $api->version('v1', [
 
      // 需要 token 验证的接口
     $api->group(['middleware' => 'api.auth'], function($api) {
+        // 首页视频分页
+        $api->get('videos', 'VideosController@index')->name('api.video.index');
+        //视频详情
+        $api->get('videos/{id}', 'VideosController@show')->name('api.video.show');
+        // 单个资源的评论
+        $api->get('videos/comments/{id}', 'VideosController@Comments')->name('api.comments.show');
         // 当前登录用户信息
-        $api->get('member', 'MembersController@me')
-            ->name('api.member.show');
+        $api->get('member', 'MembersController@me')->name('api.member.me');
+        // 游客信息
+        $api->get('members/{member_id}', 'MembersController@show')->name('api.member.show');
     });
 });

@@ -70,7 +70,12 @@ class AuthorizationsController extends Controller
                     // 返回401
                     return $this->response->errorUnauthorized('验证码错误');
                 }
+                // 清除缓存
+                env('APP_DEBUG') || \Cache::forget($request->verification_key);
                 $member = Members::where('phone', $verifyData['phone'])->first();
+                if (!$member) {
+                    $member = Members::create(['phone'=> $verifyData['phone']]);  
+                }
         }
         $token=\Auth::guard('api')->fromUser($member);
         return $this->respondWithToken($token);
@@ -95,13 +100,6 @@ class AuthorizationsController extends Controller
         return $this->respondWithToken($token);
     }
 
-    /**
-     * 验证码登录
-     *
-     */
-    public function codeStore(VerificationMemberInfoRequest $request)
-    {
-    }
 
     /**
      * 获取微信openid
@@ -109,7 +107,7 @@ class AuthorizationsController extends Controller
      */
     public function getAppid()
     {
-        return ['appid' => env("WEIXIN_KEY")];
+        return $this->responseData(['appid' => env("WEIXIN_KEY")]);
     }
 
 
@@ -119,7 +117,7 @@ class AuthorizationsController extends Controller
      */
     protected function respondWithToken($token)
     {
-        return $this->response->array([
+        return $this->responseData([
             'access_token' => $token,
             'token_type' => 'Bearer',
             'expires_in' => \Auth::guard('api')->factory()->getTTL() * 60
@@ -139,6 +137,6 @@ class AuthorizationsController extends Controller
     public function destroy()
     {
         \Auth::guard('api')->logout();
-        return $this->response->noContent();
+        return $this->responseSuccess();
     }
 }
