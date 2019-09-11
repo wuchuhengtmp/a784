@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Dingo\Api\Routing\Helpers;
 use App\Http\Controllers\Controller as BaseController;
 use League\Fractal\TransformerAbstract;
+use Illuminate\Support\Facades\Storage;
 
 class Controller extends BaseController
 {
@@ -77,5 +78,19 @@ class Controller extends BaseController
         } else {
             return $url;
         }
+    }
+
+
+    /**
+     * 上传文件
+     *
+     */
+    public function DNSupload(string $path)
+    {
+       $url =  Storage::url($path); 
+       $disk = Storage::disk('qiniu');
+       $disk->put($path, file_get_contents(".".$url));
+       $full_path = str_replace(' ', '', $disk->getUrl($path));
+       return $full_path;
     }
 }

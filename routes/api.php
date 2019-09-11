@@ -66,5 +66,9 @@ $api->version('v1', [
         $api->get('member', 'MembersController@me')->name('api.member.me');
         // 游客信息
         $api->get('members/{member_id}', 'MembersController@show')->name('api.member.show');
+        //视频上传
+        $api->post('videos', 'VideosController@store')->name('api.video.store');
+        // 分类标签
+        $api->get('tags', 'TagsController@index')->name('api.tags.index');
     });
 });

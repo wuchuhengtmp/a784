@@ -16,6 +16,13 @@ use App\Models\AnswerComments;
 class Posts extends Model
 {
     use  SoftDeletes;    
+    protected $fillable = [
+        'video_url',
+        'title',
+        'tag_id',
+        'content_type',
+        'member_id'
+    ]; 
     protected $dates = ['deleted_at'];
 
     /**

@@ -10,8 +10,11 @@ use App\Models\Comments;
 use App\Models\AccountLogs;
 use App\Models\MemberFollow;
 use App\Models\Levels;
+use App\Models\Images;
+use App\Models\PostImages;
 use App\Models\CommentLikes;
 
+use App\Http\Requests\Api\PostVideoRequest;
 class VideosController extends Controller
 {
     /**
@@ -20,7 +23,6 @@ class VideosController extends Controller
      */
     public function index()
     {
-        $data = [];
         $Posts =  DB::table('posts')
             ->where('posts.content_type', 1)
             ->select(
@@ -43,10 +45,22 @@ class VideosController extends Controller
                 $el->url = $el->url && !isset(parse_url($el->url)['host']) ? env("APP_URL") .'/'. $el->url : $el->url;
             }
             $Posts = $Posts->toArray(); 
-            $Posts['data']['count']  = $Posts['total'];
-            $data = $Posts['data'];
+            $Posts['count'] = $Posts['total'];
+            unset(
+            $Posts['first_page_url'],
+            $Posts['from'],
+            $Posts['last_page'],
+            $Posts['path'],
+            $Posts['per_page'],
+            $Posts['prev_page_url'],
+            $Posts['to'],
+            $Posts['next_page_url'],
+            $Posts['total'],
+            $Posts['current_page'],
+            $Posts['last_page_url']
+            );
         }
-         return $this->responseData($data); 
+         return $this->responseData($Posts); 
     }
 
     /**
@@ -120,15 +134,47 @@ class VideosController extends Controller
                 $tmp['created_at'] = $el->created_at->toArray()['formatted'];
                 $tmp['likes'] = $el->likes_count;
                 $tmp['is_like'] = CommentLikes::isLike($el->id, $this->user()->id);
+                $tmp['full_path'] = $el->order_weight;
                 $data[] = $tmp;
             }
-            $data = $this->_arrToTree($data); 
         }
+        $data = $this->_arrToTree($data); 
         $result['list'] = $data;
         $result['total'] = count($data);
         return $this->responseData($result);
     }
-
+    
+    /**
+    *  视频上传
+    *
+    *  @http    POST
+    */
+    public function store(PostVideoRequest $Request, Posts $Post)
+    {
+       $path = $Request->file('video')->store('public');
+       $data['video_url']  = $this->DNSupload($path);
+       $data['title'] = $Request->title; 
+       $data['tag_id'] = $Request->tag_id;
+       $data['content_type'] = 1;
+       $data['member_id'] = $this->user()->id;
+       DB::beginTransaction();
+       try{
+           $Post = $Post::create($data); 
+           $Image = Images::create([
+               'url'=> $this->DNSupload($Request->file('image')->store('public')),
+               'from'=> 2
+           ]);
+           $PostsImage = Db::table('post_image')->insert([
+               'post_id' => $Post->id,
+               'image_id' =>  $Image->id
+           ]);
+           DB::commit();
+       }catch(\Exception $e) {
+           DB::rollBack();
+           return $this->responseError('服务器内部错误');
+       } 
+       return $this->responseSuccess(); 
+    }
 
     /**
      * 将数组遍历为数组树

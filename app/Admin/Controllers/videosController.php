@@ -32,6 +32,7 @@ class videosController extends AdminController
             $actions->disableView();
         });
         $grid->disableCreateButton();
+        $grid->paginate(4);
         $grid->model()->where('content_type', 1);
         $grid->model()->orderBy('id', 'desc');
         $grid->column('id', 'ID');

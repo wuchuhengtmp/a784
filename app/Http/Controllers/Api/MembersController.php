@@ -77,22 +77,25 @@ class MembersController extends Controller
             ->withCount([
                 'postLikes',
                 'commentLikes',
-                'favorites'
+                'follows',
+                'fans'
             ])
             ->first();
         if (!$Member) return $this->responseError();
-        $data['avatar']          = $this->transferUrl($Member->avatar->url);
-        $data['nickname']        = $Member->nickname;
-        $data['level']           = Members::getlevelInfoByMemberId($Member->id)->name ?? null;
-        $data['sign']            = $Member->sign;
-        $data['sex']             = $Member->sex;
-        $data['job']             = $Member->job_name;
-        $data['school']          = $Member->school;
-        $data['education']       = $Member->education->name;
-        $data['professional']    = $Member->professional;
-        $data['likes']           = $Member->post_likes_count + $Member->comment_likes_count;
-        $data['count_favorites'] = $Member->favorites_count;
-        dd($data);
+        $data['id'] = $Member->id;
+        $data['avatar']        = $this->transferUrl($Member->avatar->url);
+        $data['nickname']      = $Member->nickname;
+        $data['level']         = Members::getlevelInfoByMemberId($Member->id)->name ?? null;
+        $data['sign']          = $Member->sign;
+        $data['sex']           = $Member->sex;
+        $data['job']           = $Member->job_name;
+        $data['school']        = $Member->school;
+        $data['education']     = $Member->education->name;
+        $data['professional']  = $Member->professional;
+        $data['likes']         = $Member->post_likes_count + $Member->comment_likes_count;
+        $data['follows_count'] = $Member->follows_count;
+        $data['fans_count']    = $Member->fans_count;
+        return $this->responseData($data);
     }
 }
 

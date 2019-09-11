@@ -109,6 +109,15 @@ class Members extends Authenticatable implements JWTSubject
         return $this->belongsToMany(Members::class, 'member_follows', 'member_id', 'follow_member_id');
     }
 
+    /**
+     * 关联他的粉丝
+     *
+     */
+    public function fans()
+    {
+        return $this->belongsToMany(Members::class, 'member_follows', 'follow_member_id', 'member_id');
+    }
+
 
     /**
      * 关联他的收藏
@@ -206,13 +215,5 @@ class Members extends Authenticatable implements JWTSubject
             'id'
         );
     }
-
-    /* 
-     * 关注 
-     */ 
-    /* public function favorites() */
-    /* { */
-    /*     return $this->hasMany(Favorites::class, 'member_id', 'id'); */
-    /* } */
 }
 
