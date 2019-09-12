@@ -13,8 +13,8 @@ use App\Models\Levels;
 use App\Models\Images;
 use App\Models\PostImages;
 use App\Models\CommentLikes;
-
 use App\Http\Requests\Api\PostVideoRequest;
+
 class VideosController extends Controller
 {
     /**
@@ -83,14 +83,15 @@ class VideosController extends Controller
             }
         }
         $data =  [
-            'id' => $Post->id,
-            'title'   => $Post->title,
-            'member_id'   => $Post->member_id,
-            'shares'  => $Post->shares,
-            'likes'  => $Post->all_likes,
+            'id'              => $Post->id,
+            'title'           => $Post->title,
+            'member_id'       => $Post->member_id,
+            'shares'          => $Post->shares,
+            'video_url'       => $Post->video_url,
+            'likes'           => $Post->all_likes,
             'total_commtents' => $Post->comments_count,
-            'nickname' => $Post->member->nickname,
-            'avatar'   => $Post->member->avatar->url,
+            'nickname'        => $Post->member->nickname,
+            'avatar'          => $Post->member->avatar->url,
         ];
         if ($url = $Post->images) {
             if($url = $url->toArray()[0]['url']) {
@@ -101,6 +102,7 @@ class VideosController extends Controller
                 }
             }
         }
+        DB::table('posts')->where('id', $id)->increment('clicks');
         return $this->responseData($data);
     }
 
@@ -152,11 +154,11 @@ class VideosController extends Controller
     public function store(PostVideoRequest $Request, Posts $Post)
     {
        $path = $Request->file('video')->store('public');
-       $data['video_url']  = $this->DNSupload($path);
-       $data['title'] = $Request->title; 
-       $data['tag_id'] = $Request->tag_id;
+       $data['video_url']    = $this->DNSupload($path);
+       $data['title']        = $Request->title;
+       $data['tag_id']       = $Request->tag_id;
        $data['content_type'] = 1;
-       $data['member_id'] = $this->user()->id;
+       $data['member_id']    = $this->user()->id;
        DB::beginTransaction();
        try{
            $Post = $Post::create($data); 

@@ -68,7 +68,13 @@ $api->version('v1', [
         $api->get('members/{member_id}', 'MembersController@show')->name('api.member.show');
         //视频上传
         $api->post('videos', 'VideosController@store')->name('api.video.store');
+        //文章上传
+        $api->post('articles', 'ArticlesController@store')->name('api.article.store');
+        //问答上传
+        $api->post('questions', 'QuestionController@store')->name('api.question.store');
         // 分类标签
         $api->get('tags', 'TagsController@index')->name('api.tags.index');
+        // 他（她）的关注
+        $api->get('follows/{member_id}', 'FollowsController@show')->name('api.follows.show');
     });
 });

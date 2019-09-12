@@ -35,16 +35,16 @@ class AnswersController extends AdminController
         });
         $grid->disableCreateButton();
         $grid->column('id', 'Id');
-        $grid->column('images','封面图片')->display(function($model){
-            $html = '';
-            $data = Posts::where('id', $this->id)->with('images')->first();
-            if ($data->images) {
-                foreach($this->images as $el) {
-                    $html .=  " <img src='{$el["url"]}'  style='max-width:60px;max-height:60px' class='img img-thumbnail'>";
-                } 
-            }
-            return $html;
-        });
+        /* $grid->column('images','封面图片')->display(function($model){ */
+        /*     $html = ''; */
+        /*     $data = Posts::where('id', $this->id)->with('images')->first(); */
+        /*     if ($data->images) { */
+        /*         foreach($this->images as $el) { */
+        /*             $html .=  " <img src='{$el["url"]}'  style='max-width:60px;max-height:60px' class='img img-thumbnail'>"; */
+        /*         } */ 
+        /*     } */
+        /*     return $html; */
+        /* }); */
         $grid->column('title', '问题')->width(200)->limit(25);
         $grid->column('answers', '回答')->display(function(){
                 return count($this->answers);

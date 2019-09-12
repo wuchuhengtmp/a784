@@ -5,7 +5,11 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Http\Requests\Api\MembersRequest;
 use App\Http\Requests\Api\VerificationMemberInfoRequest ;
-use App\Models\Members;
+use App\Models\{
+    Members,
+    Posts,
+    MemberFollow
+};
 use App\Transformers\MemberTransformer;
 
 class MembersController extends Controller
@@ -73,7 +77,7 @@ class MembersController extends Controller
      */
     public function show(Members $Member, Request $Request)
     {
-        $Member            = $Member->where('id', $Request->member_id)
+        $Member = $Member->where('id', $Request->member_id)
             ->withCount([
                 'postLikes',
                 'commentLikes',
@@ -82,7 +86,9 @@ class MembersController extends Controller
             ])
             ->first();
         if (!$Member) return $this->responseError();
-        $data['id'] = $Member->id;
+        $MyFollowMembers = MemberFollow::where('member_id', $this->user()->id)->get();
+        $MyFollowMemerIds = $MyFollowMembers ? array_values(array_column($MyFollowMembers->toArray(), 'follow_member_id')) : [];
+        $data['id']            = $Member->id;
         $data['avatar']        = $this->transferUrl($Member->avatar->url);
         $data['nickname']      = $Member->nickname;
         $data['level']         = Members::getlevelInfoByMemberId($Member->id)->name ?? null;
@@ -95,6 +101,67 @@ class MembersController extends Controller
         $data['likes']         = $Member->post_likes_count + $Member->comment_likes_count;
         $data['follows_count'] = $Member->follows_count;
         $data['fans_count']    = $Member->fans_count;
+        $data['is_follow']      = in_array($Member->id, $MyFollowMemerIds) ? true : false;
+        $data['videos']        = [];
+        $data['questions']     = [];
+        $data['articles']      = [];
+        //视频
+        $Vdieos = Posts::where('member_id', $Request->member_id)
+            ->where('content_type', 1)
+            ->with(['images'])
+            ->get();
+        if ($Vdieos) {
+            foreach($Vdieos as $el) {
+                $tmp['clicks']    = $el->clicks;
+                $tmp['id']        = $el->id;
+                $tmp['image_url'] = isset($el->images[0]->url) ? $this->transferUrl($el->images[0]->url) : null;
+                $data['videos'][]  = $tmp;
+            }
+        }
+        //文章
+        $Articles = Posts::where('member_id', $Request->member_id)
+            ->where('content_type', 2)
+            ->with(['images'])
+            ->withCount(['comments'])
+            ->get();
+        if ($Articles) {
+            foreach($Articles as $el) {
+                $tmp = [];
+                $tmp['id']  = $el->id;
+                $tmp['title']  = $el->title;
+                $tmp['comment_count'] = $el->comments_count;
+                $tmp['author']       =  $el->member->nickname;
+                $tmp['created_at']   = $el->created_at->toDateTimeString();
+                if (count($el->images) > 0) {
+                    foreach($el->images as $Image) {
+                        $tmp['images'][] = $Image->url;
+                    }
+                }
+                $data['articles'][] = $tmp;
+            }
+        }
+        // 问答
+        $Questions = Posts::where('member_id', $Request->member_id)
+            ->where('content_type', 3)
+            ->with(['images'])
+            ->withCount(['comments'])
+            ->get();
+        if ($Questions) {
+            foreach($Questions as  $el) {
+                $tmp = [];
+                $tmp['id']  = $el->id;
+                $tmp['title']  = $el->title;
+                $tmp['comment_count'] = $el->comments_count;
+                $tmp['author']       =  $el->member->nickname;
+                $tmp['created_at']   = $el->created_at->toDateTimeString();
+                if (count($el->images) > 0) {
+                    foreach($el->images as $Image) {
+                        $tmp['images'][] = $Image->url;
+                    }
+                }
+                $data['questions'][] = $tmp;
+            }
+        }
         return $this->responseData($data);
     }
 }

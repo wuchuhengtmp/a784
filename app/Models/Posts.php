@@ -21,9 +21,15 @@ class Posts extends Model
         'title',
         'tag_id',
         'content_type',
+        'content',
         'member_id'
     ]; 
     protected $dates = ['deleted_at'];
+    protected $hidden = [
+        'sponsor_at',
+        'deleted_at',
+        'updated_at'
+    ];
 
     /**
      * 关联图片

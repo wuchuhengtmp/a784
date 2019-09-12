@@ -120,7 +120,7 @@ class AuthorizationsController extends Controller
         return $this->responseData([
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'expires_in' => \Auth::guard('api')->factory()->getTTL() * 60
+            'expires_in' => \Auth::guard('api')->factory()->getTTL() * 6000
         ]);
     }
 

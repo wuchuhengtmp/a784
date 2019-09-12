@@ -18,6 +18,14 @@ class MemberFollow extends Model
         return $this->hasOne(Members::class, 'id', 'member_id');
     }
     
+    /**
+     * 关联关注用户
+     *
+     */
+    public function member()
+    {
+        return $this->hasOne(Members::class, 'id', 'follow_member_id');
+    }
 
     /**
      *  获取粉丝量
