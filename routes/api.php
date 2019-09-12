@@ -76,5 +76,24 @@ $api->version('v1', [
         $api->get('tags', 'TagsController@index')->name('api.tags.index');
         // 他（她）的关注
         $api->get('follows/{member_id}', 'FollowsController@show')->name('api.follows.show');
+        //关注他（她）
+        $api->post('follows/{member_id}', 'FollowsController@store')->name('api.follows.store');
+        // 他（她）的粉丝
+        $api->get('fans/{member_id}', 'FansController@show')->name('api.fans.show');
+        //分享 视频  文章
+        $api->post('videos/{post_id}/shares', 'VideosController@update')->name('api.video.update');
+        $api->post('articles/{post_id}/shares', 'VideosController@update')->name('api.video.update');
+        //评论视频
+        $api->post('videos/{post_id}/comments', 'CommentsController@store')
+            ->where(['post_id'=>'[0-9]+'])
+            ->name('api.store.update');
+        //添加回复
+        $api->post('comments/{comment_id}', 'CommentsController@replyStore')
+            ->where(['comment_id' => '[0-9]+'])
+            ->name('api.comments.replystore');
+        $api->get('search/user', 'SearchController@searchByUser')->name('api.search.user');
+        //搜索用户
+        
     });
+    
 });

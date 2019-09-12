@@ -3,22 +3,29 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
-use App\Http\Requests\Api\CheckMemberIdRequest;
 use App\Models\{
-    Members,
-    MemberFollow
+    Comments,
+    Members
 };
-          
-class FollowsController extends Controller
+
+class SearchController extends Controller
 {
     /**
-     * 他（她）的关注
+     *  搜索用户 
+     *
      */
-    public function show(Request $Request)
+    public function searchByUser(Request $Request)
     {
-        $data = [];
-        if (!$Request->member_id) return $this->responseError('缺少member_id参数');
-        if (!$Member = Members::where('id', $Request->member_id)->first()) return $this->responseError('没有这个资源');
+        $result_data = [];
+        $Request->validate([
+            'keyword' => 'required',
+        ]); 
+        $keyword = $Request->keyword;
+        $result = Members::where('nickname', 'like', "%{$keyword}%")
+                ->where('status', 1)
+                ->get();
+        if (!$result) return $this->responseData($result_data);
+
         $FollowMembers = MemberFollow::where('member_id', $Request->member_id)
             ->with(['member'])
             ->get();
@@ -38,25 +45,6 @@ class FollowsController extends Controller
                 $data[]           = $tmp;
             }
         }
-        return $this->responseData($data);
-    }
-
-    /**
-     * 关注他（她）
-     *
-     */
-    public function store(Request $Request)
-    {
-        if (!Members::isMember($Request->member_id)) return $this->responseError('没有这个用户');        
-        if (
-            MemberFollow::where('member_id', $this->user->id)
-            ->where('follow_member_id', $Request->member_id)
-            ->first('id')
-        ) 
-            return $this->responseError('你已经关注这个用户了');
-        if (!MemberFollow::create(['member_id'=> $this->user()->id, 'follow_member_id'=>$Request->member_id]))
-            return $this->responseError('服务器内部错误');
-        else 
-            return $this->responseSuccess();
     }
 }
+

@@ -215,5 +215,18 @@ class Members extends Authenticatable implements JWTSubject
             'id'
         );
     }
+
+
+    /**
+     * 是否有这个用户 
+     * 
+     * @return boolean
+     */
+    public static function isMember(int $member_id)
+    {
+        $has_data = self::where('id', $member_id)
+            ->first('id');
+        return $has_data ? true : false;
+    }
 }
 

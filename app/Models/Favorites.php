@@ -5,4 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 class Favorites extends Model
-{}
+{
+    /**
+     *  是否已经关注
+     *  
+     *  @member_id  用户id 
+     *  @post_id    资源id
+     *  @return boolean
+     */
+    public static function isFavorite(int $member_id, int $post_id)
+    {
+        $has_data = self::where('post_id', $post_id)
+            ->where('member_id', $member_id)
+            ->first('id');
+        return $has_data ? true : false; 
+    }
+}

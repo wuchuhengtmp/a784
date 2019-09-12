@@ -8,9 +8,13 @@ use App\Models\Members;
 class MemberFollow extends Model
 {
     protected $table = 'member_follows';
+    protected $fillable = [
+        'member_id',
+        'follow_member_id'
+    ];
 
     /**
-     * 关联关注用户
+     * 关联关注用户(就是TA的粉丝用户信息)
      *
      */
     public function memberFollow()
@@ -19,7 +23,7 @@ class MemberFollow extends Model
     }
     
     /**
-     * 关联关注用户
+     * 关联关注用(TA粉了的人的用户信息)
      *
      */
     public function member()

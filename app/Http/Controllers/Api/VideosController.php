@@ -14,6 +14,7 @@ use App\Models\Images;
 use App\Models\PostImages;
 use App\Models\CommentLikes;
 use App\Http\Requests\Api\PostVideoRequest;
+use App\Models\Favorites;
 
 class VideosController extends Controller
 {
@@ -92,6 +93,7 @@ class VideosController extends Controller
             'total_commtents' => $Post->comments_count,
             'nickname'        => $Post->member->nickname,
             'avatar'          => $Post->member->avatar->url,
+            'is_favorite'     => Favorites::isFavorite($this->user()->id, $Post->id)
         ];
         if ($url = $Post->images) {
             if($url = $url->toArray()[0]['url']) {
@@ -202,5 +204,19 @@ class VideosController extends Controller
            }
          }
          return $tree;
+    }
+
+
+    /**
+     * 更新post表数据
+     *
+     * @http    patch
+     * @post_id  资源id
+     */
+    public function update($post_id)
+    {
+        if (!$Post = Posts::find($post_id)) return $this->responseError('没有这个资源');
+        DB::table('posts')->where('id', $post_id)->increment('shares');
+        return $this->responseSuccess();
     }
 }
