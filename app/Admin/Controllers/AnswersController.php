@@ -88,7 +88,7 @@ class AnswersController extends AdminController
                 return new  Table(['ID', '昵称', '内容', '时间'], $data);
             });
         $grid->column('tag_id', '分类')->display(function(){
-             return $this->tag->name;
+             return $this->tag->name ?? null;
         })->label([
             1 => 'default',
             2 => 'warning',

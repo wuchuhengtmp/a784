@@ -94,6 +94,7 @@ class Posts extends Model
         return $this->hasMany(Answers::class, 'post_id', 'id');
     }
 
+
     /**
      * 关联问题评论
      *

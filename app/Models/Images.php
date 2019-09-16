@@ -9,7 +9,8 @@ class Images extends Model
     protected $hidden = [
         'created_at',
         'deleted_at',
-        'updated_at'
+        'updated_at',
+        'pivot'
     ];
     protected $fillable = [
         'url',

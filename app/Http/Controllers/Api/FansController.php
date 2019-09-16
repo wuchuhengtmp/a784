@@ -23,7 +23,6 @@ class FansController extends Controller
             ->with(['memberFollow'])
             ->get();
         $MyFollowMembers = MemberFollow::where('member_id', $this->user()->id)->get();
-        if ($MyFollowMembers) {
             // 用户自己本身注的ids 
             $MyFollowMemerIds = $MyFollowMembers ? array_values(array_column($MyFollowMembers->toArray(), 'follow_member_id')) : [];
             foreach($FollowMembers as $el) {
@@ -34,10 +33,9 @@ class FansController extends Controller
                 $tmp['level']     = $has_level ? $has_level->name : null;
                 $tmp['sign']      = $el->memberFollow->sign;
                 // 计算用户的关注和游客粉丝的是否是同一人
-                $tmp['is_follow'] = in_array($el->memberFollow->id, $MyFollowMemerIds);
+                $tmp['is_follow'] = $MyFollowMemerIds ? in_array($el->memberFollow->id, $MyFollowMemerIds) : false;
                 $data[]           = $tmp;
             }
-        }
         return $this->responseData($data);
     }
 

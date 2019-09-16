@@ -16,3 +16,6 @@ tag
 .tag
 *.swp
 *.swo
+/public/phpmyadmin
+/public/phpmyadmin/*
+/public/phpmyadmin/.*

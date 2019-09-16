@@ -9,14 +9,6 @@ use App\Models\{
 
 class CommentsController extends Controller
 {
-    /**
-    *  一个资源的评论
-    *
-    */
-    public function show()
-    {
-        dd(1);
-    }
 
     /**
      *  添加新的评论

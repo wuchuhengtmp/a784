@@ -86,14 +86,41 @@ $api->version('v1', [
         //评论视频
         $api->post('videos/{post_id}/comments', 'CommentsController@store')
             ->where(['post_id'=>'[0-9]+'])
-            ->name('api.store.update');
+            ->name('api.videos.commentsUpdate');
+        // 评论文章
+        $api->post('articles/{post_id}/comments', 'CommentsController@store')
+            ->where(['post_id'=>'[0-9]+'])
+            ->name('api.articles.commentsUpdate');
         //添加回复
         $api->post('comments/{comment_id}', 'CommentsController@replyStore')
             ->where(['comment_id' => '[0-9]+'])
             ->name('api.comments.replystore');
-        $api->get('search/user', 'SearchController@searchByUser')->name('api.search.user');
         //搜索用户
-        
-    });
-    
+        $api->get('search/user', 'SearchController@searchByUser')->name('api.search.user');
+        // 老师首页
+        $api->get('teachers', 'TeachersController@index')->name('api.teachers.user');
+        //文章详情
+        $api->get('articles/{post_id}', 'ArticlesController@show')
+            ->where(['post_id' => '[0-9]+'])
+            ->name('api.articles.show');
+        //学生首页
+        $api->get('students', 'StudentsController@index')->name('api.students.user');
+        // 写回答 
+        $api->post('answers/{post_id}', 'AnswersController@store')
+            ->where(['post_id' => '[0-9]+'])
+            ->name('api.answers.store');
+        // 问答详情
+        $api->get('answers/{post_id}', 'AnswersController@show')
+            ->where(['post_id' => '[0-9]+'])
+            ->name('api.answers.show');
+        // 提交问答评论
+        $api->post('answercomments/{answer_id}', 'AnswerCommentsController@store')
+            ->where(['post_id' => '[0-9]+'])
+            ->name('api.answercomments.store');
+        //提交问答评论的回复 
+        $api->post('replyanswercomments/{comment_id}', 'AnswerCommentsController@replyStore')
+            ->where(['post_id' => '[0-9]+'])
+            ->name('api.answercomments.replyStore');
+    }); 
+
 });

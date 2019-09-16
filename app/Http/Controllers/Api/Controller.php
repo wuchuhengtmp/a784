@@ -93,4 +93,30 @@ class Controller extends BaseController
        $full_path = str_replace(' ', '', $disk->getUrl($path));
        return $full_path;
     }
+
+    /**
+     * 将数组遍历为数组树
+     * @arr     有子节点的目录树
+     * @tree    遍历赋值的树
+     * @return  array
+     *
+     */
+    protected function _arrToTree($items, $pid = 'pid')
+    {
+         $map  = [];
+         $tree = [];
+         foreach ($items as &$it){
+           $el = &$it;
+           $map[$it['id']] = &$it;
+         }  //数据的ID名生成新的引用索引树
+         foreach ($items as &$it){
+           $parent = &$map[$it[$pid]];
+           if($parent) {
+             $parent['children'][] = &$it;
+           }else{
+             $tree[] = &$it;
+           }
+         }
+         return $tree;
+    }
 }

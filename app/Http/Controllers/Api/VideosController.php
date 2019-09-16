@@ -120,6 +120,7 @@ class VideosController extends Controller
             "CONCAT(comments.path, '-',  comments.id) AS order_weight, comments.*,
             (SELECT COUNT(*) FROM comment_likes WHERE comment_likes.comment_id = comments.id ) AS likes_count
             "))
+            ->where('post_id', $Request->id)
             ->orderBy('order_weight')
             ->with(['member'])
             ->get();
@@ -138,6 +139,7 @@ class VideosController extends Controller
                 $tmp['created_at'] = $el->created_at->toArray()['formatted'];
                 $tmp['likes'] = $el->likes_count;
                 $tmp['is_like'] = CommentLikes::isLike($el->id, $this->user()->id);
+                $tmp['is_author']  = $el->post_id == $Request->id ? true : false;
                 $tmp['full_path'] = $el->order_weight;
                 $data[] = $tmp;
             }
@@ -179,33 +181,6 @@ class VideosController extends Controller
        } 
        return $this->responseSuccess(); 
     }
-
-    /**
-     * 将数组遍历为数组树
-     * @arr     有子节点的目录树
-     * @tree    遍历赋值的树
-     * @return  array
-     *
-     */
-    protected function _arrToTree($items, $pid = 'pid')
-    {
-         $map  = [];
-         $tree = [];
-         foreach ($items as &$it){
-           $el = &$it;
-           $map[$it['id']] = &$it;
-         }  //数据的ID名生成新的引用索引树
-         foreach ($items as &$it){
-           $parent = &$map[$it[$pid]];
-           if($parent) {
-             $parent['children'][] = &$it;
-           }else{
-             $tree[] = &$it;
-           }
-         }
-         return $tree;
-    }
-
 
     /**
      * 更新post表数据

@@ -23,7 +23,6 @@ class FollowsController extends Controller
             ->with(['member'])
             ->get();
         $MyFollowMembers = MemberFollow::where('member_id', $this->user()->id)->get();
-        if ($MyFollowMembers) {
             // 用户自己本身关注的ids 
             $MyFollowMemerIds = $MyFollowMembers ? array_values(array_column($MyFollowMembers->toArray(), 'follow_member_id')) : [];
             foreach($FollowMembers as $el) {
@@ -34,10 +33,9 @@ class FollowsController extends Controller
                 $tmp['level']     = $has_level ? $has_level->name : null;
                 $tmp['sign']      = $el->member->sign;
                 // 计算用户是否用户本身和游客关注的是否是同一人
-                $tmp['is_follow'] = in_array($el->member->id, $MyFollowMemerIds);
+                $tmp['is_follow'] = $MyFollowMemerIds ? in_array($el->member->id, $MyFollowMemerIds) : false;
                 $data[]           = $tmp;
             }
-        }
         return $this->responseData($data);
     }
 

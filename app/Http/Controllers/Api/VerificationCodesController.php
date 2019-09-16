@@ -53,7 +53,6 @@ class VerificationCodesController extends Controller
         $phone =  $request->phone;
         // 生成5位随机数，左侧补0
         $code = str_pad(random_int(1, 99999), 5, 0, STR_PAD_LEFT);
-
         try {
             $result = $easySms->send($phone, [
                 'content' => "您的验证码是{$code}。用于重置密码。如非本人操作，请忽略本短信"
