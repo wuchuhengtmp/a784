@@ -126,8 +126,9 @@ $api->version('v1', [
             ->where(['answer_id' => '[0-9]+'])
             ->name('api.answers.likeAnswer');
         // 点赞回答评论
-        $api->post();
-        gitgnore
+        $api->post('answercomments/{comment_id}/likes', 'AnswerCommentsController@likeStore')
+            ->where(['comment_id' => '[0-9]+'])
+            ->name('api.answercomments.likeStore');
     }); 
 
 });
