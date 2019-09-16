@@ -121,6 +121,13 @@ $api->version('v1', [
         $api->post('replyanswercomments/{comment_id}', 'AnswerCommentsController@replyStore')
             ->where(['post_id' => '[0-9]+'])
             ->name('api.answercomments.replyStore');
+        //点赞回答
+        $api->post('answers/{answer_id}/likes', 'AnswersController@likeAnswer')
+            ->where(['answer_id' => '[0-9]+'])
+            ->name('api.answers.likeAnswer');
+        // 点赞回答评论
+        $api->post();
+        gitgnore
     }); 
 
 });

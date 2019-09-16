@@ -73,6 +73,7 @@ class AnswersController extends Controller
         if($hasData->answers) {
             // 计算回答
             foreach($hasData->answers as $el) {
+                $tmp['member_id'] = $el->member_id;
                 $tmp['nickname']  = $el->member->nickname;
                 $tmp['content']   = $el->content;
                 $tmp['avatar']    = $this->transferUrl($el->member->avatar->url);
@@ -108,5 +109,22 @@ class AnswersController extends Controller
             }
         } 
         return $this->responseData($data);
+    }
+
+    /**
+     * 点赞回答
+     *
+     */
+    public function likeAnswer(Request $Request)
+    {
+        if (!Answers::find($Request->answer_id)) 
+            return $this->responseError('没有这个回答，请检查下answer_id参数');
+        if (AnswerLikes::where('answer_id', $Request->answer_id)->where('member_id', $this->user()->id)->first())
+            return $this->responseError('你已经点赞过这个回答了');
+        $hasCreate = AnswerLikes::create([
+            'member_id' => $this->user()->id,
+            'answer_id' => $Request->answer_id
+        ]);
+        return $hasCreate ? $this->responseSuccess() : $this->responseError('服务器内部错误');
     }
 }
