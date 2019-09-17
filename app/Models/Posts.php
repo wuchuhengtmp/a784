@@ -12,6 +12,7 @@ use App\Models\Comments;
 use App\Models\Tags;
 use App\Models\Answers;
 use App\Models\AnswerComments;
+use App\Models\PostImages;
 
 class Posts extends Model
 {
@@ -25,6 +26,7 @@ class Posts extends Model
         'member_id'
     ]; 
     protected $dates = ['deleted_at'];
+
     protected $hidden = [
         'sponsor_at',
         'deleted_at',
@@ -37,6 +39,7 @@ class Posts extends Model
      */
     public function images() : object
     {
+
         return $this->belongsToMany(Images::class, 'post_image', 'post_id', 'image_id');
     }
 

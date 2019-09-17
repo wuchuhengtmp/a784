@@ -4,16 +4,47 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Models\{
-    Answers,
     Posts,
     Members,
     MemberFollow,
     AnswerLikes,
+    Answers,
     AnswerCommentLikes
 };
 
 class AnswersController extends Controller
 {
+
+    /**
+     *  答案首页
+     *
+     *
+     */
+    public function index()
+    {
+        $data = [];
+        $Posts = Posts::where('content_type', 3) 
+           ->with(['member'])
+           ->withCount(['AnswerComments'])
+           ->paginate(18);
+        if ($Posts) {
+            $tmp_data = [];
+            foreach($Posts as $el) {
+                $tmp['title'] = $el->title;
+                $tmp['nickname'] = $el->member->nickname;
+                $tmp['member_id'] = $el->member->id;
+                $tmp['created_at'] = $el->created_at->toDateTimeString();
+                $tmp['id'] = $el->id;
+                $tmp['avatar'] = $this->transferUrl($el->member->avatar->url);
+                $tmp['answer_comments_count'] =  $el->answer_comments_count;
+                $tmp_data[] = $tmp;
+            }
+        $data['data']  = $tmp_data;
+        $data['count']  =  $Posts->total(); 
+        }
+        return $this->responseData($data); 
+    } 
+
     /**
      * 写回答
      *
@@ -126,5 +157,122 @@ class AnswersController extends Controller
             'answer_id' => $Request->answer_id
         ]);
         return $hasCreate ? $this->responseSuccess() : $this->responseError('服务器内部错误');
+    }
+
+    /**
+     * 我的提问
+     *
+     * @http    GET
+     */
+    public function meQuestions()
+    {
+        $data = [];
+        $Posts = Posts::where('content_type', 3) 
+                ->where('member_id', $this->user()->id)
+                ->withCount(['answerComments'])
+                ->paginate(18);
+        if ($Posts) {
+            $tmp_data = [];
+            foreach($Posts as $el) {
+                $tmp['id']                    = $el->id;
+                $tmp['title']                 = $el->title;
+                $tmp['avatar']                = $this->transferUrl($el->member->avatar->url);
+                $tmp['nickname']              = $el->member->nickname;
+                $tmp['created_at']            = $el->created_at->toDateTimeString();
+                $tmp['answer_comments_count'] = $el->answer_comments_count;
+                $tmp_data[]                   = $tmp;
+            } 
+            $data['data'] = $tmp_data;
+            $data['count'] =  $Posts->total();
+        }
+        return $this->responseData($data);
+    }
+
+    /**
+     * 我的回答
+     *
+     * @http GET
+     */
+    public function meAnswers()
+    {
+        $data = [];
+        $Answers = Answers::where('member_id', $this->user()->id)
+            ->withCount(['answerComments'])
+            ->paginate(18);
+        if ($Answers)  {
+            $tmp_data = [];
+            foreach($Answers as $el) {
+                $tmp['id'] = $el->id;
+                $tmp['content'] = $el->content;
+                $tmp['answer_comments_count']  = $el->answer_comments_count;
+                $tmp['created_at'] = $el->created_at->toDateTimeString();
+                $tmp['post_id'] = $el->post_id;
+                $tmp_data[] = $tmp;
+            }
+            $data['data'] = $tmp_data;
+            $data['count'] = $Answers->total();
+        }
+        return $this->responseData($data);
+    }
+
+    /**
+     * 游客信息-我的提问
+     *
+     * @http    GET
+     */
+    public function showQuestionsByMemberId(Request $Request)
+    {
+        
+        if (!Members::find($Request->member_id))
+            return $this->responseError('没有这个用户');
+        $data = [];
+        $Posts = Posts::where('content_type', 3) 
+                ->where('member_id', $Request->member_id)
+                ->withCount(['answerComments'])
+                ->paginate(18);
+        if ($Posts) {
+            $tmp_data = [];
+            foreach($Posts as $el) {
+                $tmp['id']                    = $el->id;
+                $tmp['title']                 = $el->title;
+                $tmp['avatar']                = $this->transferUrl($el->member->avatar->url);
+                $tmp['nickname']              = $el->member->nickname;
+                $tmp['created_at']            = $el->created_at->toDateTimeString();
+                $tmp['answer_comments_count'] = $el->answer_comments_count;
+                $tmp_data[]                   = $tmp;
+            } 
+            $data['data'] = $tmp_data;
+            $data['count'] =  $Posts->total();
+        }
+        return $this->responseData($data);
+    }
+    
+    /**
+     * 游客信息-我的回答
+     *
+     * @http    GET
+     */
+    public function showAnswersByMemberId(Request $Request)
+    {
+        if (!Members::find($Request->member_id))
+            return $this->responseError('没有这个用户');
+        $data = [];
+        $Answers = Answers::where('member_id', $Request->member_id)
+            ->withCount(['answerComments'])
+            ->paginate(18);
+        if ($Answers)  {
+            $tmp_data = [];
+            foreach($Answers as $el) {
+                $tmp['id'] = $el->id;
+                $tmp['content'] = $el->content;
+                $tmp['answer_comments_count']  = $el->answer_comments_count;
+                $tmp['created_at'] = $el->created_at->toDateTimeString();
+                $tmp['post_id'] = $el->post_id;
+                $tmp_data[] = $tmp;
+            }
+            $data['data'] = $tmp_data;
+            $data['count'] = $Answers->total();
+        }
+        return $this->responseData($data);
     }
 }

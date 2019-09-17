@@ -39,4 +39,32 @@ class FansController extends Controller
         return $this->responseData($data);
     }
 
+    /**
+     * 我的粉丝  
+     *
+     * @http GET
+     *
+     */
+    public function me()
+    {
+        $data = [];
+        $MyFans = MemberFollow::where('follow_member_id', $this->user()->id)->get();
+        $MeFollowMembers = MemberFollow::where('member_id', $this->user()->id)
+            ->get('follow_member_id');
+        $my_follow_member_ids = $MeFollowMembers ? array_column($MeFollowMembers->toArray(), 'follow_member_id') : [];
+        if ($MyFans) {
+            foreach($MyFans as $el) {
+                $tmp['member_id']       = $el->member_id;
+                $tmp['nickname']        = $el->memberFollow->nickname;
+                $tmp['sign']            = $el->memberFollow->sign;
+                $tmp['avatar']          = $this->transferUrl($el->member->avatar->url);
+                $tmp['is_fan_together'] = in_array($el->memberFollow->id, $my_follow_member_ids);
+                $hasLevel               = Members::getlevelInfoByMemberId($el->id);
+                $tmp['level']           = $hasLevel ? $hasLevel->name : null;
+                $data[]                 = $tmp;
+            }
+        }
+        return $this->responseData($data);
+    }
+
 }

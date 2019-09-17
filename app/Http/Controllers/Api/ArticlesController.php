@@ -12,7 +12,8 @@ use App\Models\{
     AccountLogs,
     MemberFollow,
     Levels,
-    CommentLikes
+    CommentLikes,
+    Members
 };
 
 class ArticlesController extends Controller
@@ -105,6 +106,70 @@ class ArticlesController extends Controller
                 $data['comments'][]  = $tmp;
             }
             $data['comments'] = $this->_arrToTree($data['comments']);
+        }
+        return $this->responseData($data);
+    }
+
+    /** 
+     * 我的文章
+     *
+     * @http  GET
+     *
+     */
+    public function me()
+    {
+        $data = [];
+        $Posts = Posts::where('content_type', 2) 
+                ->where('member_id', $this->user()->id)
+                ->withCount(['comments'])
+                ->paginate(18);
+        if ($Posts) {
+            $tmp_data = [];
+            foreach($Posts as $el) {
+                $tmp['id'] = $el->id;
+                $tmp['title'] = $el->title;
+                $tmp['created_at'] = $el->created_at->toDateTimeString();
+                $tmp['images'] = array_map(function($el){
+                    return $this->transferUrl($el['url']);
+                }, $el->images->toArray());
+                $tmp['comments_count'] = $el->comments_count;
+                $tmp_data[] = $tmp;
+            } 
+            $data['data'] = $tmp_data;
+            $data['count'] =  $Posts->total();
+        }
+        return $this->responseData($data);
+    }
+
+    /**
+     * 游客信息-我的文章
+     *
+     * @http GET
+     *
+     */
+    public function showByMemberId(Request $Request)
+    {
+        if (!Members::find($Request->member_id))
+            return $this->responseError('没有这个用户');
+        $data = [];
+        $Posts = Posts::where('content_type', 2) 
+                ->where('member_id', $Request->member_id)
+                ->withCount(['comments'])
+                ->paginate(18);
+        if ($Posts) {
+            $tmp_data = [];
+            foreach($Posts as $el) {
+                $tmp['id'] = $el->id;
+                $tmp['title'] = $el->title;
+                $tmp['created_at'] = $el->created_at->toDateTimeString();
+                $tmp['images'] = array_map(function($el){
+                    return $this->transferUrl($el['url']);
+                }, $el->images->toArray());
+                $tmp['comments_count'] = $el->comments_count;
+                $tmp_data[] = $tmp;
+            } 
+            $data['data'] = $tmp_data;
+            $data['count'] =  $Posts->total();
         }
         return $this->responseData($data);
     }

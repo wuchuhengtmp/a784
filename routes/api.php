@@ -59,13 +59,13 @@ $api->version('v1', [
         // 首页视频分页
         $api->get('videos', 'VideosController@index')->name('api.video.index');
         //视频详情
-        $api->get('videos/{id}', 'VideosController@show')->name('api.video.show');
+        $api->get('videos/{id}', 'VideosController@show')
+            ->where(['id' => '[0-9]+'])
+            ->name('api.video.show');
         // 单个资源的评论
         $api->get('videos/comments/{id}', 'VideosController@Comments')->name('api.comments.show');
         // 当前登录用户信息
         $api->get('member', 'MembersController@me')->name('api.member.me');
-        // 游客信息
-        $api->get('members/{member_id}', 'MembersController@show')->name('api.member.show');
         //视频上传
         $api->post('videos', 'VideosController@store')->name('api.video.store');
         //文章上传
@@ -75,11 +75,13 @@ $api->version('v1', [
         // 分类标签
         $api->get('tags', 'TagsController@index')->name('api.tags.index');
         // 他（她）的关注
-        $api->get('follows/{member_id}', 'FollowsController@show')->name('api.follows.show');
+        $api->get('follows/{member_id}', 'FollowsController@show')
+            ->where(['member_id' => '[0-9]+']);
         //关注他（她）
         $api->post('follows/{member_id}', 'FollowsController@store')->name('api.follows.store');
         // 他（她）的粉丝
-        $api->get('fans/{member_id}', 'FansController@show')->name('api.fans.show');
+        $api->get('fans/{member_id}', 'FansController@show')
+            ->where(['member_id' => '[0-9]+']);
         //分享 视频  文章
         $api->post('videos/{post_id}/shares', 'VideosController@update')->name('api.video.update');
         $api->post('articles/{post_id}/shares', 'VideosController@update')->name('api.video.update');
@@ -105,6 +107,8 @@ $api->version('v1', [
             ->name('api.articles.show');
         //学生首页
         $api->get('students', 'StudentsController@index')->name('api.students.user');
+        // 答案首页
+        $api->get('answers', 'AnswersController@index')->name('api.answers.index');
         // 写回答 
         $api->post('answers/{post_id}', 'AnswersController@store')
             ->where(['post_id' => '[0-9]+'])
@@ -129,6 +133,37 @@ $api->version('v1', [
         $api->post('answercomments/{comment_id}/likes', 'AnswerCommentsController@likeStore')
             ->where(['comment_id' => '[0-9]+'])
             ->name('api.answercomments.likeStore');
+        // 关注首页
+        $api->get('follows','FollowsController@index')->name('api.follows.index');
+        // 我的视频
+        $api->get('members/me/videos', 'VideosController@me')->name('api.videos.me');
+        //我的文章
+        $api->get('members/me/articles', 'ArticlesController@me')->name('api.articles.me'); 
+        // 我的问题
+        $api->get('members/me/questions', 'AnswersController@meQuestions')->name('api.answers.meQuestions'); 
+        // 我的回答
+        $api->get('members/me/answers', 'AnswersController@meAnswers')->name('api.answers.meAnswers'); 
+        //游客信息-基本信息 
+        $api->get('members/{member_id}', 'MembersController@show')
+            ->name('api.member.show');
+        //游客信息-我的视频 
+        $api->get('members/{member_id}/videos', 'VideosController@showByMemberId')
+            ->where(['member_id' => '[0-9]+'])
+            ->name('api.videos.showByMemberId');
+        //游客信息-我的文章
+        $api->get('members/{member_id}/articles', 'ArticlesController@showByMemberId')
+            ->where(['member_id' => '[0-9]+'])
+            ->name('api.articles.showByMemberId');
+        // 游客信息-我的问题
+        $api->get('members/{member_id}/questions', 'AnswersController@showQuestionsByMemberId')
+            ->where(['member_id' => '[0-9]+']);
+        // 游客信息-我的回答
+        $api->get('members/{member_id}/answers', 'AnswersController@showAnswersByMemberId')
+            ->where(['member_id' => '[0-9]+']);
+        // 我的关注
+        $api->get('follows/me', 'FollowsController@showMe');
+        // 我的粉丝 
+        $api->get('fans/me', 'FansController@me');
     }); 
 
 });

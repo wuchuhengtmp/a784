@@ -3,18 +3,22 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
-use App\Models\Posts;
 use App\Transformers\VideosTransformer;
 use Illuminate\Support\Facades\DB;
-use App\Models\Comments;
-use App\Models\AccountLogs;
-use App\Models\MemberFollow;
-use App\Models\Levels;
-use App\Models\Images;
-use App\Models\PostImages;
-use App\Models\CommentLikes;
 use App\Http\Requests\Api\PostVideoRequest;
-use App\Models\Favorites;
+use App\Models\{
+    Posts,
+    Comments,
+    AccountLogs,
+    MemberFollow,
+    Levels,
+    Images,
+    PostImages,
+    CommentLikes,
+    Favorites,
+    Members
+};
+
 
 class VideosController extends Controller
 {
@@ -193,5 +197,63 @@ class VideosController extends Controller
         if (!$Post = Posts::find($post_id)) return $this->responseError('没有这个资源');
         DB::table('posts')->where('id', $post_id)->increment('shares');
         return $this->responseSuccess();
+    }
+
+    /**
+     * 我的视频
+     *
+     * @http    GET 
+     */ 
+    public function me()
+    {
+        $data = [];
+        $Posts = Posts::where('content_type', 1) 
+                ->where('member_id', $this->user()->id)
+                ->paginate(18);
+        if ($Posts) {
+            $tmp_data = [];
+            foreach($Posts as $el) {
+                $tmp['title'] = $el->title;
+                $tmp['video_url'] = $el->video_url;
+                $tmp['id'] = $el->id;
+                $tmp['member_id'] = $el->member_id;
+                $tmp['image'] = $this->transferUrl($el->images[0]->url);
+                $tmp['clicks_count'] = $el->clicks;
+                $tmp_data[] = $tmp;
+            } 
+            $data['data'] = $tmp_data;
+            $data['count'] =  $Posts->total();
+        }
+        return $this->responseData($data);
+    }
+
+    /**
+     * 用户的个人视频
+     *
+     * @http GET
+     */
+    public function showByMemberId(Request $Request)
+    {
+        if (!Members::find($Request->member_id))
+            return $this->responseError('没有这个用户');
+            $data = [];
+            $Posts = Posts::where('content_type', 1) 
+                    ->where('member_id', $Request->member_id)
+                    ->paginate(18);
+            if ($Posts) {
+                $tmp_data = [];
+                foreach($Posts as $el) {
+                    $tmp['title']        = $el->title;
+                    $tmp['video_url']    = $el->video_url;
+                    $tmp['id']           = $el->id;
+                    $tmp['member_id']    = $el->member_id;
+                    $tmp['image']        = $this->transferUrl($el->images[0]->url);
+                    $tmp['clicks_count'] = $el->clicks;
+                    $tmp_data[]          = $tmp;
+                } 
+                $data['data'] = $tmp_data;
+                $data['count'] =  $Posts->total();
+            }
+            return $this->responseData($data);
     }
 }

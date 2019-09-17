@@ -74,7 +74,7 @@ class Controller extends BaseController
     public function transferUrl(string $url) //: string
     {
         if(!isset(parse_url($url)['host'])) {
-            return env('APP_URL') . '/' . $url;
+            return substr($url,0, 1) !== '/' ? env('APP_URL') . '/' . $url : env('APP_URL') . $url;
         } else {
             return $url;
         }

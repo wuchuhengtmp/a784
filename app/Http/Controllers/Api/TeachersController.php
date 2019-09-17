@@ -29,7 +29,8 @@ class TeachersController extends Controller
                     video_url,
                     content_type,
                     posts.created_at,
-                    tag_id
+                    tag_id,
+                    images.url as avatar
                 ")
                 ) 
             ->whereNull('posts.deleted_at');
@@ -40,11 +41,14 @@ class TeachersController extends Controller
             ])
             ->withCount(['comments'])
             ->join('members', 'members.id', '=', 'posts.member_id')
+            ->join('post_image', 'post_image.post_id', '=', 'posts.id')
+            ->join('images', 'images.id', '=', 'post_image.image_id')
             ->orderBy('order_weight', 'desc') 
             ->paginate(18);
         if ($Posts) {
             foreach($Posts as $el) {
                 unset($el->order_weight);
+                $el->avatar = $this->transferUrl($el->avatar);
                 if($el->content_type != 1 ) unset($el->video_url);
                 if($el->content_type == 3 ) unset($el->images);
             }

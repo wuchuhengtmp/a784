@@ -8,6 +8,7 @@ use App\Models\Members;
 class MemberFollow extends Model
 {
     protected $table = 'member_follows';
+
     protected $fillable = [
         'member_id',
         'follow_member_id'

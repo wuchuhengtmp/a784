@@ -9,6 +9,8 @@ use App\Models\Members;
 
 class Comments extends Model
 {
+    use  SoftDeletes;
+
     protected $fillable = [
         'pid',
         'member_id',
@@ -16,8 +18,6 @@ class Comments extends Model
         'content',
         'path',
     ];
-    
-    use  SoftDeletes;
 
     protected $hidden = [
         'deleted_at',
