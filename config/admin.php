@@ -153,7 +153,7 @@ return [
     'upload' => [
 
         // Disk in `config/filesystem.php`.
-        'disk' => 'admin',
+        'disk' => 'qiniu',
 
         // Image and file upload path under the disk above.
         'directory' => [
@@ -396,5 +396,18 @@ return [
     */
     'extensions' => [
 
+        'summernote' => [
+            //Set to false if you want to disable this extension
+            'enable' => true,
+            // Editor configuration
+            'config' => [
+                'lang'   => 'zh-CN',
+                'height' => 500,
+            ]
+        ],
+        'cropper' => [
+            // 如果要关掉这个扩展，设置为false
+            'enable' => true,
+        ]
     ],
 ];

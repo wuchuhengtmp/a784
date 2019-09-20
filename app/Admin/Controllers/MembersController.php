@@ -37,16 +37,13 @@ class MembersController extends AdminController
     {
         $grid = new Grid(new Member);
         $grid->disableCreateButton();
-        //$grid->disableActions();
         $grid->filter(function($filter){
             $filter->between('created_at', '创建时间')->datetime();
             $filter->like('nickname', '昵称')->placeholder('请输入昵称');
             $filter->equal('phone', '手机号码')->placeholder('请输入手机号码');
         });
-
         $grid->id('ID')->sortable();
         $grid->column('avatar.url', '头像')->display(function ($avatar) {
-            $avatar =  '/uploads/' . $avatar;
             $el = <<< EOT
             <a href="{$avatar}" class="grid-popup-link"> <img src="{$avatar}" style="max-width:50px;max-height:50px" class="img img-thumbnail"> </a>
 EOT;
@@ -240,7 +237,7 @@ EOT;
         $form = new Form(new Members);
         $form->text('name', '姓名');
         $form->text('password', '密码');
-        $form->image('avatar.url', '头像')->move('public/upload/image1');;
+        $form->image('avatar.url', '头像')->move('public/upload/image1');
         $form->date('born', '生日');
         $form->text('next_plan', '近期动向');
         $form->date('start_school_at', '入学年份');

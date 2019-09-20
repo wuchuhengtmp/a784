@@ -103,20 +103,48 @@ class Controller extends BaseController
      */
     protected function _arrToTree($items, $pid = 'pid')
     {
-         $map  = [];
-         $tree = [];
-         foreach ($items as &$it){
-           $el = &$it;
-           $map[$it['id']] = &$it;
-         }  //数据的ID名生成新的引用索引树
-         foreach ($items as &$it){
-           $parent = &$map[$it[$pid]];
-           if($parent) {
-             $parent['children'][] = &$it;
-           }else{
-             $tree[] = &$it;
-           }
-         }
-         return $tree;
+        $result = [];
+        $tmp = [];
+        foreach($items as $k=>$el) {
+            if ($k === 0 && $el['pid'] == 0) {
+               $tmp = $el; 
+            } elseif ($k !== 0 && $el['pid'] == 0 ) {
+                $tmp['children'] = $tmp['children'] ?? [];
+                $result[] = $tmp;
+                unset($tmp);
+                $tmp = $el;
+            } else {
+                if (!isset($tmp['children'])) {
+                    $parent = $tmp;
+                } else {
+                    $parent = end($tmp['children']);
+                }
+                $el['PTOC'] = $parent['nickname'] . '回复' . $tmp['nickname'];
+                $tmp['children'][] = $el;
+            }
+            // 补上最后一刀
+            if (++$k === count($items)) {
+                $tmp['children'] = $tmp['children'] ?? [];
+                $result[] = $tmp;
+            }
+
+        }
+        return $result;
+         /* $map  = []; */
+         /* $tree = []; */
+         /* foreach ($items as &$it){ */
+         /*   $el = &$it; */
+         /*   $el['children'] = []; */
+         /*   $map[$it['id']] = &$it; */
+         /* }  //数据的ID名生成新的引用索引树 */
+         /* foreach ($items as &$it){ */
+         /*   $parent = &$map[$it[$pid]]; */
+         /*   if($parent) { */
+         /*     $parent['children'][] = &$it; */
+         /*   }else{ */
+         /*     $tree[] = &$it; */
+         /*   } */
+         /* } */
+         /* return $tree; */
     }
 }

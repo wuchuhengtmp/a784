@@ -5,7 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\{
     Members,
-    AnswerCommentLikes
+    AnswerCommentLikes,
+    Answer,
+    Posts
 };
 
 class AnswerComments extends Model
@@ -39,5 +41,21 @@ class AnswerComments extends Model
     public function likeMembers()
     {
         return $this->hasMany(AnswerComments::class, 'answer_comment_id', 'id');
+    }
+
+    /**
+     * 关联post 
+     *
+     */
+    public function post()
+    {
+        return $this->hasOneThrough(
+            Posts::class, 
+            Answers::class, 
+            'id',
+            'id',
+            'answer_id',
+            'post_id'
+        );
     }
 }

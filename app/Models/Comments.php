@@ -45,7 +45,6 @@ class Comments extends Model
         return $this->hasOne(Posts::class, 'id', 'post_id'); 
     }
 
-
     /**
      * 获取用户被评论量
      * 
@@ -84,7 +83,6 @@ class Comments extends Model
                         $query->select('title', 'id'); 
                     }
                 ])
-
             ->orderby('id', 'desc')
             ->get();
         if ($Comments->isEmpty()) return [];

@@ -18,9 +18,9 @@ class PostArticleRequest extends FormRequest
                 'required', 'numeric'
             ],
             'title' => 'required|string',
-            'image.0' => 'required|image',
-            'image.1' => 'image',
-            'image.2' => 'image',
+            'image1' => 'required|image',
+            'image2' => 'image',
+            'image3' => 'image',
             'content' => 'required',
         ];
     }

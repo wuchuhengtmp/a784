@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\{
+    Posts
+};
 
 class Favorites extends Model
 {
@@ -19,5 +22,15 @@ class Favorites extends Model
             ->where('member_id', $member_id)
             ->first('id');
         return $has_data ? true : false; 
+    }
+
+
+    /**
+     * 关联收藏的资源
+     *
+     */
+    public function post()
+    {
+        return $this->hasOne(Posts::class, 'id', 'post_id');
     }
 }

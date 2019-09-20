@@ -17,4 +17,5 @@ Route::group([
     $router->resource('answers', AnswersController::class);
     $router->resource('journal-logs', JournalAccountController::class);
     $router->resource('feedback', FeedbackController::class);
+    $router->resource('system-message-details', SystemMessageDetailsController::class);
 });

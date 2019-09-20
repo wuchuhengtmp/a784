@@ -16,7 +16,8 @@ use App\Models\{
     PostImages,
     CommentLikes,
     Favorites,
-    Members
+    Members,
+    PostLikes
 };
 
 
@@ -87,7 +88,9 @@ class VideosController extends Controller
                $Post->member->avatar->url = env('APP_URL')  . '/'  . $url;
             }
         }
-        $data =  [
+        $myLikePosts = PostLikes::where('member_id', $this->user()->id)->get('member_id');
+        $my_like_post_ids = $myLikePosts ? array_column($myLikePosts->toArray(), 'member_id') : [];
+        $data =  [ 
             'id'              => $Post->id,
             'title'           => $Post->title,
             'member_id'       => $Post->member_id,
@@ -97,7 +100,9 @@ class VideosController extends Controller
             'total_commtents' => $Post->comments_count,
             'nickname'        => $Post->member->nickname,
             'avatar'          => $Post->member->avatar->url,
-            'is_favorite'     => Favorites::isFavorite($this->user()->id, $Post->id)
+            'is_favorite'     => Favorites::isFavorite($this->user()->id, $Post->id),
+            'is_like'         => in_array($Post->id, $my_like_post_ids),
+            'is_follow'       => in_array($Post->member_id, MemberFollow::getFollowMemberIdsByMmberId($this->user()->id)),
         ];
         if ($url = $Post->images) {
             if($url = $url->toArray()[0]['url']) {

@@ -8,9 +8,10 @@ use Illuminate\Support\Facades\DB;
 use App\Models\{
     Members,
     MemberFollow,
-    Posts
+    Posts,
+    Messages
 };
-          
+
 class FollowsController extends Controller
 {
     /**
@@ -24,7 +25,8 @@ class FollowsController extends Controller
             ->get();
         if (!$myFollowMembers) return $this->responseError('还没有关注!');
         $my_follow_member_ids = array_column($myFollowMembers->toArray(), 'follow_member_id');
-        $Posts = Posts::whereIn('member_id',$my_follow_member_ids)
+        $Posts = Posts::whereIn('content_type', [1,2])->
+            whereIn('member_id',$my_follow_member_ids)
             ->with(['member', 'comments', 'images'])
             ->withCount(['comments', 'likes'])
             ->paginate(18);
@@ -106,10 +108,13 @@ class FollowsController extends Controller
             ->first('id')
         ) 
             return $this->responseError('你已经关注这个用户了');
-        if (!MemberFollow::create(['member_id'=> $this->user()->id, 'follow_member_id'=>$Request->member_id]))
+        $memberFollow = MemberFollow::create(['member_id'=> $this->user()->id, 'follow_member_id'=>$Request->member_id]);
+        if (!$memberFollow) {
             return $this->responseError('服务器内部错误');
-        else 
+        } else {
+            Messages::insertByMemberFollowId($memberFollow->id);
             return $this->responseSuccess();
+        }
     }
 
     /**
@@ -138,6 +143,18 @@ class FollowsController extends Controller
             
         }
         return $this->responseData($data);
+    }
+
+    /**
+     * 取消关注
+     *
+     */
+    public function destroy(Request $Request) 
+    {
+        MemberFollow::where('follow_member_id', $Request->member_id) 
+            ->where('member_id', $this->user()->id)
+            ->delete();
+        return $this->responseSuccess();
     }
 
 }

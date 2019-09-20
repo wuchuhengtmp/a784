@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\{
     Members,
     AnswerComments,
-    AnswerLikes    
+    AnswerLikes    ,
+    Posts
 };
 
 class Answers extends Model
@@ -48,5 +49,18 @@ class Answers extends Model
     public function answerLikes()
     {
         return $this->hasMany(AnswerLikes::class, 'answer_id', 'id');
+    }
+
+    /**
+     * 关联资源
+     *
+     */
+    public function post()
+    {
+        return $this->hasOne(
+            Posts::class,
+            'id',
+            'post_id'
+        );
     }
 }

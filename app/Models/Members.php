@@ -19,7 +19,6 @@ class Members extends Authenticatable implements JWTSubject
     protected $appends = ['job_name'];    /* use  Notifiable; */
     protected $fillable = [
         'phone',
-        'password',
         'name',
         'avatar_image_id',
         'email',
@@ -182,6 +181,17 @@ class Members extends Authenticatable implements JWTSubject
         $fans = MemberFollow::countFansBYUid($member_id);
         $has_level = Levels::getLevelByFansAndMony($fans, $money);
         return $has_level;
+    }
+
+    /**
+     *  获取会员名
+     *
+     * @return mix
+     */
+    public static function getLevelNameByMemberId($member_id)
+    {
+        $hasData = self::getlevelInfoByMemberId($member_id);
+        return $hasData ? $hasData->name : null;
     }
 
     /**

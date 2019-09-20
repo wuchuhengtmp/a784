@@ -8,6 +8,11 @@ use App\Models\Members;
 class Feedback extends Model
 {
     protected $table = 'feedbacks';
+    protected $fillable = [
+        'content',
+        'contact',
+        'member_id'
+    ];
 
     /**
      * 关联用户

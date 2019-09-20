@@ -67,4 +67,6 @@ class FansController extends Controller
         return $this->responseData($data);
     }
 
+    
+
 }

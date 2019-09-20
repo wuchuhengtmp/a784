@@ -13,3 +13,5 @@
 Route::get('/', function(){
     return view('welcome');
 });
+
+Route::get('/messages/{id}', 'MessagesController@show')->name('web.messages.show');

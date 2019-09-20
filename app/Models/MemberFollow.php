@@ -15,7 +15,7 @@ class MemberFollow extends Model
     ];
 
     /**
-     * 关联关注用户(就是TA的粉丝用户信息)
+     * 关联关注用户(就是自己的信息)
      *
      */
     public function memberFollow()
@@ -42,5 +42,17 @@ class MemberFollow extends Model
         $is_int = self::where('follow_member_id', $uid)
             ->count();
         return $is_int;
+    }
+
+    /**
+     * 获取当前用户关注的用户id组
+     *
+     *  @return Array
+     */
+    public static function getFollowMemberIdsByMmberId($member_id)
+    {
+        $myFollowMembers = self::where('member_id', $member_id)->get('follow_member_id');
+        $my_follow_member_ids = $myFollowMembers ? array_column($myFollowMembers->toArray(), 'follow_member_id') : [];
+        return $my_follow_member_ids;
     }
 }

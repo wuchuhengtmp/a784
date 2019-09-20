@@ -111,7 +111,7 @@ class Posts extends Model
             'answer_id',
             'id',
             'id'
-        ) ;
+        );
     }
 
     protected static function boot()

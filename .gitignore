@@ -19,3 +19,6 @@ tag
 /public/phpmyadmin
 /public/phpmyadmin/*
 /public/phpmyadmin/.*
+/public/phpredisadmin/
+/public/phpredisadmin/.*
+/public/phpredisadmin/*

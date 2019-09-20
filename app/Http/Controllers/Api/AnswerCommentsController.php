@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Models\{
     AnswerComments,
-    AnswerCommentLikes
+    AnswerCommentLikes,
+    Messages
 };
 
 class AnswerCommentsController extends Controller
@@ -54,11 +55,12 @@ class AnswerCommentsController extends Controller
             'path'      => $ParenComment->path . '-' . $ParenComment->id,
             'answer_id' => $ParenComment->answer_id
         ]);
-        if ($hasSave)
+        if ($hasSave) {
+            Messages::answerCommentReply($hasSave->id);
             return $this->responseSuccess();
-        else 
+        } else  {
             return $this->responseError();
-            
+        }
     }
 
     /**
@@ -81,5 +83,4 @@ class AnswerCommentsController extends Controller
         ]);
         return $hasCreate ? $this->responseSuccess() : $this->responseError('服务器内部错误');
     }
-
 }

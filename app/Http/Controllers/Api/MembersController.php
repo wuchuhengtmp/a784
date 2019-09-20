@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Http\Requests\Api\MembersRequest;
 use App\Http\Requests\Api\VerificationMemberInfoRequest ;
+use Illuminate\Support\Facades\DB;
+use App\Http\Requests\Api\UpdateMeRequest;
 use App\Models\{
     Members,
     Posts,
@@ -32,6 +34,7 @@ class MembersController extends Controller
         $user = Members::create([
             'phone' => $verifyData['phone'],
             'password' => bcrypt($request->password),
+            'nickname' => '用户_' . rand(1, 999),
         ]);
 
         // 清除验证码缓存
@@ -70,7 +73,7 @@ class MembersController extends Controller
     {
         $Member = Members::where('id', $this->user()->id)
             ->with(['education'])
-            ->withCount(['fans','commentLikes', 'follows' ])
+            ->withCount(['fans','commentLikes', 'follows'])
             ->first();
         $Member->avatar_url = $this->transferUrl($Member->avatar->url);
         $hasLevel = Members::getlevelInfoByMemberId($this->user()->id);
@@ -145,6 +148,56 @@ class MembersController extends Controller
             'education'
         ])->toArray();
         return $this->responseData($data);
+    }
+
+    /**
+     * 编辑我的资料
+     *
+     *  @http PATCH
+     */
+    public function updateMe(UpdateMeRequest $Request)
+    {
+        $Request->nickname        && $input['nickname']        = $Request->nickname;
+        $Request->sign            && $input['sign']            = $Request->sign;
+        $Request->sex             && $input['sex']             = $Request->sex;
+        $Request->age             && $input['age']             = $Request->age;
+        $Request->job             && $input['job']             = $Request->job;
+        $Request->born            && $input['born']            = $Request->born;
+        $Request->weixin          && $input['weixin']          = $Request->weixin;
+        $Request->school          && $input['school']          = $Request->school;
+        $Request->department      && $input['department']      = $Request->department;
+        $Request->professional    && $input['professional']    = $Request->professional;
+        $Request->education_id    && $input['education_id']    = $Request->education_id;
+        $Request->email           && $input['email']           = $Request->email;
+        $Request->start_school_at && $input['start_school_at'] = $Request->start_school_at;
+        $Request->hobby           && $input['hobby']           = $Request->hobby;
+        $Request->password        && $input['password']        = bcrypt($Request->password);
+        if (!$input) return  $this->responseError('请输入参数');
+
+        $is_save = DB::table('members')
+            ->where('id', $this->user()->id)
+            ->update($input);
+        if ($is_save ) 
+            return $this->responseSuccess();
+        else 
+            return $this->responseError('更新失败，您提交的内容没有进行任何变动');
+            
+            
+    }
+
+    /**
+     * 修改头像
+     *
+     * @http POST
+     */
+    public function avatarUpdate(Request $Request)
+    {
+        $Member = Members::with(['avatar'])->where('id', $this->user->id)->first();
+        $Avatar = $Member->avatar;
+        $Avatar->url = $this->DNSupload($Request->file('avatar')->store('public'));
+        $is_save = $Avatar->save();
+        return  $is_save ? $this->responseSuccess() : $this->responseError();
+            
     }
 }
 

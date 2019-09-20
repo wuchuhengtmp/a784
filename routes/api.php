@@ -65,7 +65,7 @@ $api->version('v1', [
         // 单个资源的评论
         $api->get('videos/comments/{id}', 'VideosController@Comments')->name('api.comments.show');
         // 当前登录用户信息
-        $api->get('member', 'MembersController@me')->name('api.member.me');
+        $api->get('members/me', 'MembersController@me')->name('api.member.me');
         //视频上传
         $api->post('videos', 'VideosController@store')->name('api.video.store');
         //文章上传
@@ -78,7 +78,11 @@ $api->version('v1', [
         $api->get('follows/{member_id}', 'FollowsController@show')
             ->where(['member_id' => '[0-9]+']);
         //关注他（她）
-        $api->post('follows/{member_id}', 'FollowsController@store')->name('api.follows.store');
+        $api->post('follows/{member_id}', 'FollowsController@store')
+            ->where(['member_id' => '[0-9]+']);
+        //取消关注他（她）
+        $api->delete('follows/{member_id}', 'FollowsController@destroy')
+            ->where(['member_id' => '[0-9]+']);
         // 他（她）的粉丝
         $api->get('fans/{member_id}', 'FansController@show')
             ->where(['member_id' => '[0-9]+']);
@@ -125,14 +129,6 @@ $api->version('v1', [
         $api->post('replyanswercomments/{comment_id}', 'AnswerCommentsController@replyStore')
             ->where(['post_id' => '[0-9]+'])
             ->name('api.answercomments.replyStore');
-        //点赞回答
-        $api->post('answers/{answer_id}/likes', 'AnswersController@likeAnswer')
-            ->where(['answer_id' => '[0-9]+'])
-            ->name('api.answers.likeAnswer');
-        // 点赞回答评论
-        $api->post('answercomments/{comment_id}/likes', 'AnswerCommentsController@likeStore')
-            ->where(['comment_id' => '[0-9]+'])
-            ->name('api.answercomments.likeStore');
         // 关注首页
         $api->get('follows','FollowsController@index')->name('api.follows.index');
         // 我的视频
@@ -164,6 +160,47 @@ $api->version('v1', [
         $api->get('follows/me', 'FollowsController@showMe');
         // 我的粉丝 
         $api->get('fans/me', 'FansController@me');
+        // 爵位信息
+        $api->get('levels', 'LevelsController@index');
+        // 我的收藏-视频
+        $api->get('members/me/favorites/videos', 'FavoritesController@myVideos');
+        // 我的收藏-视频
+        $api->get('members/me/favorites/articles', 'FavoritesController@myArticles');
+        // 编辑资料
+        $api->patch('members/me', 'MembersController@updateMe');
+        // 学历列表
+        $api->get('educations', 'EducationsController@index');
+        // 编辑头像
+        $api->post('members/me/avatar', 'MembersController@avatarUpdate');
+        // 意见反馈 
+        $api->post('feedbacks', 'FeedbacksController@store');
+        // 点赞消息
+        $api->get('messages/likes', 'LikesController@index');
+        // 点赞视频和文章
+        $api->post('posts/likes/{post_id}', 'LikesController@store')
+            ->where(['post_id'=> '[0-9]+']);
+        $api->delete('posts/likes/{post_id}', 'LikesController@destroy')
+            ->where(['post_id'=> '[0-9]+']);
+        // 点赞文章和视频评论
+        $api->post('likes/posts/comments/{comment_id}', 'LikesController@commentStore')
+            ->where(['comment_id' => '[0-9]+']); 
+        //取消点赞文章和视频评论
+        $api->delete('likes/posts/comments/{comment_id}', 'LikesController@commentDestroy')
+            ->where(['comment_id' => '[0-9]+']); 
+        //答案点赞
+        $api->post('likes/answers/{answer_id}', 'LikesController@AnswerStore')
+            ->where(['answer_id' => '[0-9]+']); 
+        //取消答案点赞
+        $api->delete('likes/answers/{answer_id}', 'LikesController@AnswerDestroy')
+            ->where(['answer_id' => '[0-9]+']); 
+        // 答案评论点赞
+        $api->post('likes/answercomments/{comment_id}', 'LikesController@answerCommentStore');
+        // 取消答案评论点赞
+        $api->delete('likes/answercomments/{comment_id}', 'LikesController@answerCommentDestroy');
+        // 推送消息过来
+        $api->get('messages', 'MessagesController@index');
+        // 消息标记为已读取
+        $api->patch('messages', 'MessagesController@update');
     }); 
 
 });
