@@ -9,7 +9,8 @@ use App\Models\{
     Members,
     MemberFollow,
     Posts,
-    Messages
+    Messages,
+    Comments
 };
 
 class FollowsController extends Controller
@@ -41,13 +42,22 @@ class FollowsController extends Controller
                 $tmp['content_type']   = $el->content_type;
                 $tmp['comments_count'] = $el->comments_count;
                 $tmp['likes_count']    = $el->likes_count;
-                $tmp['Images']  = [];
+                $tmp['Images']  = []; 
+                $tmp['is_like']      = Posts::isLike($this->user()->id, $el->id);
                 foreach($el->Images as $images_el) {
                     $tmp['Images'][]         = $this->transferUrl($images_el->url);
                 }
-                if ($el->comments) {
+                if ($el->content_type == 1) 
+                $tmp['video_url']     = $el->video_url;
+                if (!$el->comments->isEmpty()) {
+                    $comments = Comments::select(
+                        DB::raw("CONCAT(path, '-', id) AS order_weight,comments.*")
+                        ) 
+                        ->orderBy('order_weight')
+                        ->where('post_id', $el->id)
+                        ->get();
                     $tmp['comments'] = [];
-                    foreach($el->comments as $comment_el) {
+                    foreach($comments as $comment_el) {
                         $tmp_comment['nickname']   = $comment_el->member->nickname;
                         $tmp_comment['avatar']     = $this->transferUrl($comment_el->member->avatar->url);
                         $tmp_comment['created_at'] = $comment_el->created_at->toDateTimeString();
@@ -157,4 +167,96 @@ class FollowsController extends Controller
         return $this->responseSuccess();
     }
 
+
+    /**
+     * 关注首页
+     *
+     *
+     */
+    public function getAll(Request $Request)
+    {
+        $myFollowMembers = MemberFollow::where('member_id', $this->user()->id)
+            ->get();
+        if (!$myFollowMembers) return $this->responseError('还没有关注!');
+        $my_follow_member_ids = array_column($myFollowMembers->toArray(), 'follow_member_id');
+        $Posts = Posts::whereIn('content_type', [1,2])->
+            whereIn('member_id',$my_follow_member_ids)
+            ->with(['member', 'comments', 'images'])
+            ->withCount(['comments', 'likes'])
+            ->paginate(18);
+        $data = []; 
+        if ($Posts){ 
+            foreach($Posts as $el) {
+                $tmp['title']          = $el->title;
+                $tmp['post_id']        = $el->id;
+                $tmp['created_at']     = $el->created_at->toDateTimeString();
+                $tmp['nickname']       = $el->member->nickname;
+                $tmp['avatar']         = $this->transferUrl($el->member->avatar->url);
+                $tmp['content_type']   = $el->content_type;
+                $tmp['comments_count'] = $el->comments_count;
+                $tmp['likes_count']    = $el->likes_count;
+                $tmp['Images']  = []; 
+                $tmp['is_like']      = Posts::isLike($this->user()->id, $el->member_id);
+                foreach($el->Images as $images_el) {
+                    $tmp['Images'][]         = $this->transferUrl($images_el->url);
+                }
+                if ($el->content_type == 1) 
+                $tmp['video_url']     = $el->video_url;
+                $tmp['comments']      = [];
+                $comment_count =  Comments::where('pid', 0)
+                    ->where('post_id', $el->id)
+                    ->count();
+                $tmp['comments'] = [];
+                if ($comment_count >  0) {
+                    // 评论
+                    $comments = Comments::select(
+                        DB::raw("CONCAT(path, '-', id) AS order_weight,comments.*")
+                        ) 
+                        ->orderBy('order_weight')
+                        ->where('post_id', $el->id)
+                        ->where('pid', 0)
+                        ->limit(3)
+                        ->paginate(2);
+                    $tmp['comments']['count'] = $comment_count;
+                    foreach($comments as $comment_el) {
+                        $tmp_comment['nickname']   = $comment_el->member->nickname;
+                        $tmp_comment['avatar']     = $this->transferUrl($comment_el->member->avatar->url);
+                        $tmp_comment['created_at'] = $comment_el->created_at->toDateTimeString();
+                        $tmp_comment['id']         = $comment_el->id;
+                        $tmp_comment['pid']        = $comment_el->pid;
+                        $hasLevel                  = Members::getlevelInfoByMemberId($el->member->id);
+                        $tmp_comment['level']      = $hasLevel ? $hasLevel->name : null;
+                        $tmp_comment['content']    = $comment_el->content;
+                        $tmp_comment['replies']    = [];
+                        // 回复
+                        $reply_count = Comments::where('post_id', $el->id)
+                            ->where('path', 'like', "0-" . $comment_el->id . "%")
+                            ->count();
+                        if ($reply_count > 0) {
+                            $tmp_comment['replies']['count'] = $reply_count;
+                            $Replies = Comments::where('post_id', $el->id)
+                                ->where('path', 'like', "0-" . $el->comment_el . '%')
+                                ->paginate(2);
+                            foreach($Replies as $k=>$reply_el) {
+                                $tmp_reply['nickname']   = $comment_el->member->nickname;
+                                $tmp_reply['avatar']     = $this->transferUrl($comment_el->member->avatar->url);
+                                $tmp_reply['created_at'] = $comment_el->created_at->toDateTimeString();
+                                $tmp_reply['id']         = $comment_el->id;
+                                $tmp_reply['pid']        = $comment_el->pid;
+                                $tmp_reply['level']      = Members::getLevelNameByMemberId($reply_el->member_id);
+                                $tmp_reply['content']    = $comment_el->content;
+                                $tmp_reply['PTOC']       = $k === 0 ? $comment_el->member->nickname . ' 回复 ' . $comment_el->member->nickname : $comment_el->member->nickname . ' 回复 ' . $Replies[--$k]->member->nickname;
+                                $tmp_comment['replies']['data'][] = $tmp_reply;
+                            }
+                        }
+                        $tmp['comments']['data'][] = $tmp_comment;
+                    }
+                    $tmp['comments']['count'] = $comments->total();
+                }
+                $data['data'][] = $tmp;
+            }
+            $data['count'] = $Posts->total();
+        }
+        return $this->responseData($data);
+    }
 }

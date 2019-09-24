@@ -93,8 +93,11 @@ class AuthorizationsController extends Controller
         $credentials['password'] = $request->password;
 
         if (!$token = auth('api')->attempt($credentials)) {
-
-            return $this->response->errorUnauthorized('用户名或密码错误');
+            return $this->response()->array([
+                'message' => '密码或用户名错误',
+                'status_code'  => 422,
+                'data'  => []
+            ], 200);
         }
 
         return $this->respondWithToken($token);
@@ -120,7 +123,7 @@ class AuthorizationsController extends Controller
         return $this->responseData([
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'expires_in' => \Auth::guard('api')->factory()->getTTL() * 6000
+            'expires_in' => \Auth::guard('api')->factory()->getTTL() * 60
         ]);
     }
 

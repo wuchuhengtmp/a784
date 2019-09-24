@@ -55,4 +55,5 @@ class MemberFollow extends Model
         $my_follow_member_ids = $myFollowMembers ? array_column($myFollowMembers->toArray(), 'follow_member_id') : [];
         return $my_follow_member_ids;
     }
+
 }

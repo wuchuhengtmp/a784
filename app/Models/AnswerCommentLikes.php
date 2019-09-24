@@ -40,4 +40,17 @@ class AnswerCommentLikes extends Model
     {
         return $this->hasOne(Members::class, 'id', 'member_id');
     }
+
+    /**
+     * 获取点赞的评论ids
+     *
+     * @return Array
+     */
+    public static function getLikesByMemberId($member_id)
+    {
+        $myCommentLikes      = self::where('member_id', $member_id)->get(['answer_comment_id']);
+        $my_comment_like_ids = $myCommentLikes ? array_column($myCommentLikes->toArray(), 'answer_comment_id') : [];
+        return $my_comment_like_ids;
+    }
+
 }

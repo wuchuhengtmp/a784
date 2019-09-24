@@ -53,8 +53,8 @@ $api->version('v1', [
      // 删除token
     $api->delete('authorizations/current', 'AuthorizationsController@destroy')
         ->name('api.authorizations.destroy');
-
      // 需要 token 验证的接口
+
     $api->group(['middleware' => 'api.auth'], function($api) {
         // 首页视频分页
         $api->get('videos', 'VideosController@index')->name('api.video.index');
@@ -198,9 +198,47 @@ $api->version('v1', [
         // 取消答案评论点赞
         $api->delete('likes/answercomments/{comment_id}', 'LikesController@answerCommentDestroy');
         // 推送消息过来
-        $api->get('messages', 'MessagesController@index');
+        $api->get('messages', 'MessagesController@send');
         // 消息标记为已读取
         $api->patch('messages', 'MessagesController@update');
+        // 测试
+        $api->get('test', 'TestController@index');
+        // 收藏
+        $api->post('favorites/posts/{post_id}', 'FavoritesController@postStore'); 
+        // 取消收藏
+        $api->delete('favorites/posts/{post_id}', 'FavoritesController@postDestroy'); 
+        // 消息详情列表
+        $api->get('messages/list', 'MessagesController@index'); 
+        // 支付宝签名订单
+        $api->get('pays/alipay', 'PayController@index');
+        // 提交支付结果 
+        $api->get('pays/alipay/return', 'PayController@return');
+        // 置顶
+        $api->post('topsearch/{post_id}', 'PayController@topsearchStore')
+            ->where(['post_id' => '[0-9]+']);
+        //**************** 版本2接口*********//
+        //获取资源评论
+        $api->get('v2/comments/posts/{post_id}', 'CommentsController@postShow')
+            ->where(['post_id' => '[0-9]+']);
+        //获取资源评论下的回复
+        $api->get('v2/comments/posts/{comment_id}/replies', 'CommentsController@postReplyShow')
+            ->where(['post_id' => '[0-9]+']);
+        //关注首页
+        $api->get('v2/follows','FollowsController@getAll');
+        //问题详情
+        $api->get('v2/questions/{post_id}', 'AnswersController@version2show')
+            ->where(['post_id' => '[0-9]+']);
+        //答案列表
+        $api->get('v2/questions/{question_id}/answers', 'AnswersController@answersShow')
+            ->where(['question_id' => '[0-9]+']);
+        //评论
+        $api->get('v2/answercomments/{answer_id}', 'AnswersController@_getComments')
+            ->where(['question_id' => '[0-9]+']);
+        // 回复
+        $api->get('v2/answercomments/{answer_id}/replies', 'AnswersController@repliesshow')
+            ->where(['question_id' => '[0-9]+']) ;
     }); 
-
+    // 支付宝回调请求 
+    $api->post('pays/alipay/natify', 'PayController@notify');
+    $api->get('pays/alipay/natify', 'PayController@notify');
 });

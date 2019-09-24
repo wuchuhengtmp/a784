@@ -9,6 +9,11 @@ use App\Models\{
 
 class Favorites extends Model
 {
+    protected $fillable = [
+        'member_id',
+        'post_id'
+    ];
+    
     /**
      *  是否已经关注
      *  

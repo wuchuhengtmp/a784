@@ -21,6 +21,7 @@ class StudentsController extends Controller
         ]);
         $stage =  (new Posts())
             ->where('members.job', 1)
+            ->whereIn('content_type', [1,2])
             ->select(
                 DB::raw("CONCAT(posts.sponsor_at, '-', posts.all_likes, '-', posts.created_at) AS order_weight,
                     posts.id, 

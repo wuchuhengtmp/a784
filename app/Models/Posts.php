@@ -4,15 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Posts;
-use App\Models\Images;
-use App\Models\Members;
-use App\Models\PostLikes;
-use App\Models\Comments;
-use App\Models\Tags;
-use App\Models\Answers;
-use App\Models\AnswerComments;
-use App\Models\PostImages;
+use App\Models\{
+    Images,
+    Members,
+    PostLikes,
+    Comments,
+    Tags,
+    Answers,
+    AnswerComments,
+    PostImages,
+};
+
 
 class Posts extends Model
 {
@@ -121,6 +123,19 @@ class Posts extends Model
              $post->images()->delete();
              $post->comments()->delete();
         });
+    }
+
+    /**
+     * 是否点赞
+     *
+     * @return boolean 
+     */
+    public static function  isLike($member_id, $post_id)
+    {
+        $hasData = PostLikes::where('member_id', $member_id)->get();
+        if (!$hasData) return false;
+        $post_ids = array_column($hasData->toArray(), 'post_id');
+        return in_array($post_id, array_column($hasData->toArray(), 'post_id'));
     }
 }
 

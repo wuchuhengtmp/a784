@@ -17,6 +17,7 @@ class SearchController extends Controller
      */
     public function searchByUser(Request $Request)
     {
+        $data = []; 
         $result_data = [];
         $Request->validate([
             'nickname' => 'required',

@@ -88,15 +88,16 @@ class VideosController extends Controller
                $Post->member->avatar->url = env('APP_URL')  . '/'  . $url;
             }
         }
-        $myLikePosts = PostLikes::where('member_id', $this->user()->id)->get('member_id');
-        $my_like_post_ids = $myLikePosts ? array_column($myLikePosts->toArray(), 'member_id') : [];
+        $like_count = PostLikes::where('post_id', $id)->count();
+        $myLikePosts = PostLikes::where('member_id', $this->user()->id)->get('post_id');
+        $my_like_post_ids = $myLikePosts ? array_column($myLikePosts->toArray(), 'post_id') : [];
         $data =  [ 
             'id'              => $Post->id,
             'title'           => $Post->title,
             'member_id'       => $Post->member_id,
             'shares'          => $Post->shares,
             'video_url'       => $Post->video_url,
-            'likes'           => $Post->all_likes,
+            'likes'           => $like_count,
             'total_commtents' => $Post->comments_count,
             'nickname'        => $Post->member->nickname,
             'avatar'          => $Post->member->avatar->url,

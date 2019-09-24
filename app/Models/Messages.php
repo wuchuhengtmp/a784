@@ -15,6 +15,7 @@ use App\Models\{
     
 class Messages extends Model
 {
+    public static $_redis;
     protected $fillable = [
         'answer_like_id',
         'comment_like_id',
@@ -68,7 +69,7 @@ class Messages extends Model
         $postLike = PostLikes::find($post_like_id);
         $data['member_id']         = $postLike->member_id;
         $data['post_like_id']      = $postLike->id;
-        $data['be_like_member_id'] = $postLike->post->member->id;
+        $data['be_like_member_id'] = $postLike->post->member_id;
         $data['type']              = 1;
         switch($postLike->post->content_type) {
             case 1 : 
@@ -101,7 +102,7 @@ class Messages extends Model
         $commentLike = CommentLikes::find($comment_like_id);
         $data['member_id']         = $commentLike->member_id;
         $data['comment_like_id']   = $commentLike->id;
-        $data['be_like_member_id'] = $commentLike->post->member->id;
+        $data['be_like_member_id'] = $commentLike->comment->member->id;
         $data['type']              = 1;
         switch($commentLike->post->content_type) {
             case 1 : 
@@ -134,7 +135,7 @@ class Messages extends Model
         $answerLike= AnswerLikes::find($answer_like_id);
         $data['member_id']         = $answerLike->member_id;
         $data['answer_like_id']    = $answerLike->id;
-        $data['be_like_member_id'] = $answerLike->post->member->id;
+        $data['be_like_member_id'] = Answers::find($answerLike->answer_id)->member_id;
         $data['content']           = $answerLike->member->nickname . "点赞你的答案" ;
         $data['type']              = 1;
         $isCreate = self::create($data);
@@ -231,7 +232,7 @@ class Messages extends Model
         $Comment = Comments::find($comment_id);
         $data['post_comment_id']   = $Comment->id;
         $data['member_id']         = $Comment->member_id;
-        $data['be_like_member_id'] = $Comment->post->member->id;
+        $data['be_like_member_id'] = Comments::find($Comment->pid)->id;
         $data['content']           = $Comment->content;
         $data['type']              = 4;
         self::create($data);
@@ -247,7 +248,7 @@ class Messages extends Model
         $answerComment             = AnswerComments::find($comment_id);
         $data['answer_comment_id'] = $answerComment->id;
         $data['member_id']         = $answerComment->member_id;
-        $data['be_like_member_id'] = $answerComment->post->member->id;
+        $data['be_like_member_id'] = AnswerComments::find($answerComment->pid)->member_id;
         $data['content']           = $answerComment->content;
         $data['type']              = 4;
         self::create($data);
@@ -290,25 +291,28 @@ class Messages extends Model
 
     protected static function getData($be_like_member_id, $type)
     {
-        $result = [];
+        $result = [
+            'content'    => '',
+            'type'       => '',
+            'created_at' => '',
+            'count'      => ''
+        ];
         $hasData = self::where('be_like_member_id', $be_like_member_id)
             ->where('type', $type)
-            ->get();
+            ->where('is_readed', 0)
+            ->count();
         if ($hasData) {
-            $result['news_count'] = 0;
-            foreach($hasData as $el) {
-                $tmp['content']    = $el->content;
-                $tmp['is_readed']  = $el->is_readed;
-                $tmp['created_at'] = $el->created_at->toDateTimeString();
-                $tmp['nickname']   = $el->member->nickname;
-                $tmp['avatar']     = $el->member->avatar->url;
-                $tmp['level']      = Members::getLevelNameByMemberId($el->member->id);
-                $tmp['member_id']  = $el->member_id;
-                $el->is_readed || $result['news_count']++;
-                $result['data'][] = $tmp;
-            }
+            $result['count'] = $hasData;
+           $news  = self::where('be_like_member_id', $be_like_member_id)
+                ->where('type', $type)
+                ->where('is_readed', 0)
+                ->orderBy('created_at', 'desc')
+                ->first(['content', 'created_at', 'type']);
+            $result['content'] = $news->content;
+            $result['type'] =  $type;
+            $result['created_at'] = $news->created_at->toDateTimeString();
         }
-        return $result;
+        return count($result) > 0 ? $result : '';
     }
 
     /**
@@ -317,39 +321,66 @@ class Messages extends Model
      */
     public static function getSystemMessage($be_like_member_id)
     {
-        $result = [];
+        $result = [
+            'title'      => '',
+            'type'       => '',
+            'created_at' => '',
+            'count'      => ''
+        ];
         $hasData = self::where('be_like_member_id', $be_like_member_id)
             ->where('type', 5)
-            ->get();
+            ->where('is_readed', 0)
+            ->count();
         if ($hasData) {
-            $result['news_count'] = 0;
-            foreach($hasData as $el) {
-                $tmp['content']    = $el->systemMessageDetail->content; 
-                $tmp['is_readed']  = $el->is_readed;
-                $tmp['created_at'] = $el->created_at->toDateTimeString();
-                $tmp['url']        = $el->systemMessageDetail->avatar->url;
-                $tmp['title']      = $el->systemMessageDetail->title;
-                intval($el->is_readed) || $result['news_count']++;
-                $result['data'][] = $tmp;
-            }
+            $result['count'] = $hasData;
+            $news = self::where('be_like_member_id', $be_like_member_id)
+                ->where('type', 5)
+                ->where('is_readed', 0)
+                ->orderBy('created_at', 'desc')
+                ->first(['system_message_detail_id', 'created_at']);
+            $detail = SystemMessageDetails::where('id', $news->system_message_detail_id)
+                ->first('title');
+            $result['title'] = $detail->title;
+            $result['type']  = 5;
+            $result['created_at'] = $news->created_at->toDateTimeString();
         }
         return $result;
-        
     }
 
     protected static function boot()
     {
         parent::boot();
         static::saved(function($message) {
-            $data_format['likes']           = Messages::getData($message->be_like_member_id, 1);
-            $data_format['follows']         = Messages::getData($message->be_like_member_id, 2);
-            $data_format['comments']        = Messages::getData($message->be_like_member_id, 3);
-            $data_format['replies']         = Messages::getData($message->be_like_member_id, 4);
-            $data_format['system_messages'] = Messages::getSystemMessage($message->be_like_member_id);
-            Messages::sendMessage([
-                'member_id'  => $message->be_like_member_id,
-                'data'       => json_encode($data_format)
-            ]);
+            $Redis = Messages::getRedisInstance(); 
+            if ($Redis->exists(env('REDIS_PREFIX') . $message->be_like_member_id)) {
+                $data_format['likes']           = Messages::getData($message->be_like_member_id, 1);
+                $data_format['follows']         = Messages::getData($message->be_like_member_id, 2);
+                $data_format['comments']        = Messages::getData($message->be_like_member_id, 3);
+                $data_format['replies']         = Messages::getData($message->be_like_member_id, 4);
+                $data_format['system_messages'] = Messages::getSystemMessage($message->be_like_member_id);
+                Messages::sendMessage([
+                    'member_id'  => $message->be_like_member_id,
+                    'data'       => json_encode($data_format)
+                ]);
+            }
         });
+    }
+
+    /**
+     * redis实例
+     *
+     */
+    public static function getRedisInstance()
+    {
+        if(!isset(self::$_redis)) {
+            $redis = new \Redis();
+            $redis->connect(
+                getenv('REDIS_HOST'),
+                getenv('REDIS_PORT')
+            );
+            $redis->select(env('REDIS_DB'));
+            self::$_redis = $redis;
+        }
+        return self::$_redis;
     }
 }

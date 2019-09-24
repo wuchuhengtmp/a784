@@ -21,6 +21,7 @@ class Members extends Authenticatable implements JWTSubject
         'phone',
         'name',
         'avatar_image_id',
+        'location',
         'email',
         'email_verified_at',
         'password',
@@ -226,7 +227,6 @@ class Members extends Authenticatable implements JWTSubject
         );
     }
 
-
     /**
      * 是否有这个用户 
      * 
@@ -238,5 +238,21 @@ class Members extends Authenticatable implements JWTSubject
             ->first('id');
         return $has_data ? true : false;
     }
+
+    /**
+     * 获取关注的用户id组
+     *
+     * @member_id   用户尖
+     * @return      array 
+     */
+    public static function getFollowIds(int $member_id) //: array
+    {
+        $myFollowMembers = MemberFollow::where('member_id', $member_id)
+            ->get('follow_member_id');
+        return $myFollowMembers ? array_column($myFollowMembers->toArray(), 'follow_member_id') : [];
+        
+    }
+
+
 }
 

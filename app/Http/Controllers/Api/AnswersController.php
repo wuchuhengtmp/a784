@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\{
     Posts,
     Members,
     MemberFollow,
     AnswerLikes,
     Answers,
-    AnswerCommentLikes
+    AnswerCommentLikes,
+    AnswerComments,
+    Comments
 };
 
 class AnswersController extends Controller
@@ -94,8 +97,8 @@ class AnswersController extends Controller
         $data['answer_comments_count'] = $hasData->answer_comments_count;
         $data['member_id']             = $hasData->member->id;
         $data['is_follow']             = in_array($hasData->member->id, $my_follow_ids);
-        $myFollowMembers     = MemberFollow::where('member_id', $this->user()->id)->get('follow_member_id');
-        $my_follow_ids       = $myFollowMembers ? array_column($myFollowMembers->toArray(), 'follow_member_id') : null;
+        $myFollowMember =  MemberFollow::where('member_id', $this->user()->id)->get('follow_member_id');
+        $my_follow_ids = $myFollowMember ? array_column($myFollowMember->toArray(), 'follow_member_id') : [];
         $myLikeAnswers       = AnswerLikes::where('member_id', $this->user()->id)->get(['answer_id']);
         $my_like_answer_ids  = $myLikeAnswers ? array_column($myLikeAnswers->toArray(), 'answer_id') : [];
         $myCommentLikes      = AnswerCommentLikes::where('member_id', $this->user()->id)->get(['answer_comment_id']);
@@ -105,6 +108,7 @@ class AnswersController extends Controller
             // 计算回答
             foreach($hasData->answers as $el) {
                 $tmp['member_id'] = $el->member_id;
+                $tmp['id']         = $el->id;
                 $tmp['nickname']  = $el->member->nickname;
                 $tmp['content']   = $el->content;
                 $tmp['avatar']    = $this->transferUrl($el->member->avatar->url);
@@ -116,8 +120,15 @@ class AnswersController extends Controller
                 $tmp['answer_comments_count'] = $el->answer_comments_count;
                 // 计算回答下的评论
                 $tmp_answer_comments = [];
-                if ($el->answerComments) {
-                    foreach ($el->answerComments as $answerComments)  {
+                $tmp['answerComments'] = [];
+                if (!$el->answerComments->isEmpty()) {
+                    $comments = AnswerComments::select(
+                        DB::raw("CONCAT(path, '-', id) AS order_weight,answer_comments.*")
+                        ) 
+                        ->orderBy('order_weight')
+                        ->where('answer_id', $el->id)
+                        ->get();
+                    foreach ($comments as $answerComments)  {
                         $tmp_answer_comments['nickname']      = $answerComments->member->nickname;
                         $tmp_answer_comments['id']            = $answerComments->id;
                         $tmp_answer_comments['avatar']        = $this->transferUrl($answerComments->member->avatar->url);
@@ -134,7 +145,7 @@ class AnswersController extends Controller
                         $tmp_answer_comments['content']       = $answerComments->content;
                         $tmp['answerComments'][]              = $tmp_answer_comments;
                      }
-                    $tmp['answerComments'] = $this->_arrToTree($tmp['answerComments']);
+                    $tmp['answerComments'] = isset($tmp['answerComments']) ? $this->_arrToTree($tmp['answerComments']) : [];
                 }
                 $data['answers'][] = $tmp;
             }
@@ -176,8 +187,6 @@ class AnswersController extends Controller
             foreach($Posts as $el) {
                 $tmp['id']                    = $el->id;
                 $tmp['title']                 = $el->title;
-                $tmp['avatar']                = $this->transferUrl($el->member->avatar->url);
-                $tmp['nickname']              = $el->member->nickname;
                 $tmp['created_at']            = $el->created_at->toDateTimeString();
                 $tmp['answer_comments_count'] = $el->answer_comments_count;
                 $tmp_data[]                   = $tmp;
@@ -204,6 +213,8 @@ class AnswersController extends Controller
             foreach($Answers as $el) {
                 $tmp['id'] = $el->id;
                 $tmp['content'] = $el->content;
+                $tmp['nickname'] = $el->member->nickname;
+                $tmp['avatar']  = $el->member->avatar->url;
                 $tmp['answer_comments_count']  = $el->answer_comments_count;
                 $tmp['created_at'] = $el->created_at->toDateTimeString();
                 $tmp['post_id'] = $el->post_id;
@@ -235,8 +246,6 @@ class AnswersController extends Controller
             foreach($Posts as $el) {
                 $tmp['id']                    = $el->id;
                 $tmp['title']                 = $el->title;
-                $tmp['avatar']                = $this->transferUrl($el->member->avatar->url);
-                $tmp['nickname']              = $el->member->nickname;
                 $tmp['created_at']            = $el->created_at->toDateTimeString();
                 $tmp['answer_comments_count'] = $el->answer_comments_count;
                 $tmp_data[]                   = $tmp;
@@ -275,4 +284,190 @@ class AnswersController extends Controller
         }
         return $this->responseData($data);
     }
+
+    /**
+     * 问答详情
+     *
+     */
+    public function version2show(Request $Request)
+    {
+        $hasData = $Post = Posts::where('id', $Request->post_id)
+            ->where('content_type', 3)
+            ->whereNull('deleted_at')
+            ->with([
+                'member',
+                'answers' => function($query) {
+                    $query->withCount(['answerComments'])->with(['answerComments']);
+                }
+            ])
+            ->withCount(['answerComments'])
+            ->first();
+        if (!$hasData)
+            return $this->responseError('没有这个问答, 请检查post_id是否存在');
+        $myFollowMember =  MemberFollow::where('member_id', $this->user()->id)->get('follow_member_id');
+        $my_follow_ids = $myFollowMember ? array_column($myFollowMember->toArray(), 'follow_member_id') : [];
+        $data['id']                    = $hasData->id;
+        $data['title']                 = $hasData->title;
+        $data['nickname']              = $hasData->member->nickname;
+        $data['avatar']                = $this->transferUrl($hasData->member->avatar->url);
+        $data['answer_comments_count'] = $hasData->answer_comments_count;
+        $data['member_id']             = $hasData->member->id;
+        $data['is_follow']             = in_array($hasData->member->id, $my_follow_ids);
+        return $this->responseData($data);
+    }
+
+   /**
+    *  答案 
+    *
+    * @http get 
+    */
+    public function answersShow(Request $Request)
+    {
+        $result = [
+            'data'  => [],
+            'count' => 0,
+        ];
+        $comment_limit = $Request->comment_limit ?? 2;
+        $Posts = Posts::find($Request->question_id);
+        $hasAnswers= Answers::where('post_id', $Request->question_id)
+            ->paginate(18);
+        if ($hasAnswers->isEmpty()) return $this->responseError('没有这个问题');
+        $result['count']  = $hasAnswers->total();
+        $result['data'] = $this->_getAnswers($hasAnswers);
+        return $this->responseData($result);
+    }
+
+    /**
+     * 获取答案的详情
+     * 
+     * @return 答案  
+     */
+    protected function _getAnswers(object $Answers) 
+    {
+        $my_follow_ids       = Members::getFollowIds($this->user()->id);
+        $my_like_answer_ids  = AnswerLikes::getLikesByMemberId($this->user()->id);
+        $my_comment_like_ids = AnswerCommentLikes::getLikesByMemberId($this->user()->id);
+        foreach($Answers as $el) {
+                $tmp['member_id'] = $el->member_id;
+                $tmp['id']         = $el->id;
+                $tmp['nickname']  = $el->member->nickname;
+                $tmp['content']   = $el->content;
+                $tmp['avatar']    = $this->transferUrl($el->member->avatar->url);
+                $hasLevel         = Members::getlevelInfoByMemberId($el->member_id);
+                $tmp['level']     = $hasLevel ?  $hasLevel->name : null;
+                $tmp['is_follow'] = in_array($el->member_id, $my_follow_ids);
+                $tmp['is_like']   = in_array($el->id, $my_like_answer_ids);
+                // 获取评论
+                $tmp['comments'] = $this->_getComments($el->id);
+                $result[] = $tmp;
+        }
+        return $result;
+    }
+
+    /**
+     * 获取评论
+     *
+     * @return 评论
+     */
+    public function _getComments(int $answer_id)
+    {
+        $Comments = AnswerComments::where('answer_id', $answer_id)
+            ->where('pid', 0)
+            ->paginate(2);
+        if($Comments->isEmpty()) return [];
+        $el = Answers::find($answer_id);
+        $Post = Posts::find($el->post_id);
+        $result['count'] = $Comments->total();
+        foreach($Comments as $Comm) {
+            $tmp_answer_comments['nickname']      = $Comm->member->nickname;
+            $tmp_answer_comments['id']            = $Comm->id;
+            $tmp_answer_comments['avatar']        = $this->transferUrl($Comm->member->avatar->url);
+            $tmp_answer_comments['pid']           = $Comm->pid;
+            $tmp_answer_comments['created_at']    = $Comm->created_at->toDateTimeString();
+            $hasLevel                             = Members::getlevelInfoByMemberId($Comm->member->id);
+            $tmp_answer_comments['level']         = $hasLevel ? $hasLevel->name : null;
+            $tmp_answer_comments['answer_comment_likes_count'] = AnswerCommentLikes::where('answer_comment_id', $Comm->id)->count();
+            $tmp_answer_comments['is_like']       = AnswerCommentLikes::where('answer_comment_id', $Comm->id)
+                ->where('member_id', $this->user()->id)
+                ->first() ?  true : false;
+            $tmp_answer_comments['is_questionee'] = $el->member_id == $Comm->member_id ? true : false;
+            $tmp_answer_comments['is_questioner'] = $Post->member_id == $Comm->member_id ? true : false;
+            $tmp_answer_comments['content']       = $Comm->content;
+            // 回复
+            $hasReplies = AnswerComments::where('path', 'like', '0-' . $Comm->id. '%')
+                ->select(
+                    DB::raw("CONCAT(path, '-', id) AS order_weight,answer_comments.*")
+                ) 
+                ->orderBy('order_weight')
+                ->paginate(1);
+            if (!$hasReplies->isEmpty()) {
+                unset($tmp_answer_comments['replies']);
+                $tmp_answer_comments['replies']['count'] = $hasReplies->total();
+                foreach($hasReplies as $k=>$reply){
+                    $tmp_answer_reply['nickname']      = $reply->member->nickname;
+                    $tmp_answer_reply['id']            = $reply->id;
+                    $tmp_answer_reply['avatar']        = $this->transferUrl($reply->member->avatar->url);
+                    $tmp_answer_reply['pid']           = $reply->pid;
+                    $tmp_answer_reply['created_at']    = $reply->created_at->toDateTimeString();
+                    $hasLevel                     = Members::getlevelInfoByMemberId($reply->member->id); 
+                    $tmp_answer_reply['level']         = $hasLevel ? $hasLevel->name : null;
+                    $tmp_answer_reply['answer_comment_likes_count'] = AnswerCommentLikes::where('answer_comment_id', $reply->id)->count();
+                    $tmp_answer_reply['is_like']       = AnswerCommentLikes::where('answer_comment_id', $reply->id)
+                        ->where('member_id', $this->user()->id)
+                        ->first() ?  true : false;
+                    $tmp_answer_reply['is_questionee'] = $el->member_id == $reply->member_id ? true : false;
+                    $tmp_answer_reply['is_questioner'] = $Post->member_id == $reply->member_id ? true : false;
+                    $tmp_answer_reply['content']       = $reply->content;
+                    $tmp_answer_reply['PTOC']          = $reply->member->nickname . ' 回复 ' . $tmp_answer_comments['nickname'];
+                    $tmp_answer_comments['replies']['data'][] = $tmp_answer_reply;
+                    break;
+                }
+            }
+            $result['data'][] = $tmp_answer_comments;
+        }
+        return $result;
+    }
+
+
+    /**
+    *  评论回复
+    *
+    */
+    public function repliesshow(Request $Request)
+    {
+        $tmp_answer_comments = [];
+        $limit = $Request->comment_limit ?? 1; 
+        $Comm =  AnswerComments::find($Request->answer_id);
+            $hasReplies = AnswerComments::where('path', 'like', '0-' . $Comm->id. '%')
+                ->select(
+                    DB::raw("CONCAT(path, '-', id) AS order_weight,answer_comments.*")
+                ) 
+                ->orderBy('order_weight')
+                ->paginate($limit);
+            if (!$hasReplies->isEmpty()) {
+                $el = Answers::find($Request->answer_id);
+                $Post = Posts::find($el->post_id);
+                $tmp_answer_comments['count'] = $hasReplies->total();
+                foreach($hasReplies as $k=>$reply){
+                    $tmp_answer_reply['nickname']      = $reply->member->nickname;
+                    $tmp_answer_reply['id']            = $reply->id;
+                    $tmp_answer_reply['avatar']        = $this->transferUrl($reply->member->avatar->url);
+                    $tmp_answer_reply['pid']           = $reply->pid;
+                    $tmp_answer_reply['created_at']    = $reply->created_at->toDateTimeString();
+                    $hasLevel                     = Members::getlevelInfoByMemberId($reply->member->id); 
+                    $tmp_answer_reply['level']         = $hasLevel ? $hasLevel->name : null;
+                    $tmp_answer_reply['answer_comment_likes_count'] = AnswerCommentLikes::where('answer_comment_id', $reply->id)->count();
+                    $tmp_answer_reply['is_like']       = AnswerCommentLikes::where('answer_comment_id', $reply->id)
+                        ->where('member_id', $this->user()->id)
+                        ->first() ?  true : false;
+                    $tmp_answer_reply['is_questionee'] = $el->member_id == $reply->member_id ? true : false;
+                    $tmp_answer_reply['is_questioner'] = $Post->member_id == $reply->member_id ? true : false;
+                    $tmp_answer_reply['content']       = $reply->content;
+                    $tmp_answer_reply['PTOC']          = $k === 0 ? $reply->member->nickname . ' 回复 ' . $Comm->member->nickname : $reply->member->nickname . ' 回复 ' . $hasReplies[--$k]->member->nickname;
+                    $tmp_answer_comments['data'][] = $tmp_answer_reply;
+                }
+            }
+        return $this->responseData($tmp_answer_comments);
+    }
 }
+

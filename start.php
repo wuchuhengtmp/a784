@@ -1,5 +1,7 @@
 <?php
 require 'vendor/autoload.php';
+use Tymon\JWTAuth\Facades\JWTAuth;
+
 class WebsocketTest {
     public static $_redis;
     public $redis_db = 1;
@@ -8,7 +10,6 @@ class WebsocketTest {
     public function __construct() {
         $dotenv = Dotenv\Dotenv::create(__DIR__);
         $dotenv->load();
-
         $this->server = new Swoole\WebSocket\Server("0.0.0.0", 7777);
         $this->server->set([
             'heartbeat_check_interval' => 60,
@@ -18,41 +19,47 @@ class WebsocketTest {
         ]);
 
         $this->server->on('open', function (swoole_websocket_server $server, $request) {
-            if (!$request->get['member_id']) {
-                $server->close($request->fd);
-                return false;
-            }
-            // 登记连接
-            $Redis = $this->getRedisInstance();
-            $Redis->hset($request->get['member_id'], $request->fd, date('Y-m-d H:i:s', time()));
-            // 关联连接id用于断开剔除
-            $Redis->hset('relevence', $request->fd, $request->get['member_id']);
-            $server->push($request->fd, json_encode([
-                'type' => 'ping' ,
-                'data' => [
-                    'message' => 'welcome!'
-                ]
-            ]));
+
         });
 
         $this->server->on('message', function (Swoole\WebSocket\Server $server, $frame) {
-            $server->push($frame->fd, json_encode(['type' =>'ping', 'data'=>['microtime' => microtime(true)]]));
+            if ($data = json_decode($frame->data, true)){
+                switch($data['type']) {
+                    // 登录
+                case 'login' :
+                    if (!isset($data['member_id'])) $this->server->close($frame->fd);
+                    // 登记连接
+                    $Redis = $this->getRedisInstance();
+                    $Redis->hset(getenv('REDIS_PREFIX') . $data['member_id'], $frame->fd, date('Y-m-d H:i:s', time()));
+                    $Redis->hset(getenv('REDIS_PREFIX') . 'relevence', $frame->fd, $data['member_id']);
+                    $data_format['likes']           = self::getMessageData($data['member_id'], 1);
+                    $data_format['follows']         = self::getMessageData($data['member_id'], 2);
+                    $data_format['comments']        = self::getMessageData($data['member_id'], 3);
+                    $data_format['replies']         = self::getMessageData($data['member_id'], 4);
+                    $data_format['system_messages'] = self::getSystemMessage($data['member_id']);
+                    $this->server->push($frame->fd, json_encode([
+                        'type'    => 'data', 
+                        'data'    =>$data_format
+                    ]));
+                    break;
+                }
+            }
         });
 
         $this->server->on('close', function ($ser, $fd) {
             // 剔除关闭的连接
             $Redis = $this->getRedisInstance();
-            $member_id = $Redis->hGet('relevence', $fd);
-            $Redis->hDel('relevence', $fd);
-            $Redis->hDel($member_id, $fd);
+            $member_id = $Redis->hGet(getenv('REDIS_PREFIX') . 'relevence', $fd);
+            $Redis->hDel(getenv('REDIS_PREFIX') . 'relevence', $fd);
+            $Redis->hDel(getenv('REDIS_PREFIX') . $member_id, $fd);
         });
 
         // 推送消息
         $this->server->on('request', function ($request, $response) {
             if ($member_id = $request->post['member_id']) {
                 $Redis = $this->getRedisInstance();
-                if ($Redis->exists($member_id)) {
-                    $all_ids = $Redis->hGetAll($member_id);
+                if ($Redis->exists(getenv('REDIS_PREFIX') . $member_id)) {
+                    $all_ids = $Redis->hGetAll(getenv("REDIS_PREFIX") . $member_id);
                     // 把消息推送到这个用户下的所有连接中
                     foreach($all_ids as $fd=>$time) {
                          if ($this->server->isEstablished($fd)) {
@@ -67,7 +74,6 @@ class WebsocketTest {
 
         $this->server->start();
     }
-
 
     /**
      * redis实例
@@ -86,7 +92,120 @@ class WebsocketTest {
         }
         return self::$_redis;
     }
-}
 
+    /**
+     * pdo 实例
+     *
+     */
+    public static function getPdoInstance()
+    {
+        try {
+            $dbh = new PDO("mysql:host=".getenv('DB_HOST').";dbname=" . getenv('DB_DATABASE'),
+                getenv('DB_USERNAME'),
+                getenv('DB_PASSWORD'),
+                array(
+                    PDO::ATTR_PERSISTENT => true
+                )
+            );
+        } catch (PDOException $e) {
+            return false;
+        }
+        return $dbh;
+    }
+
+    /**
+     * 获取消息
+     *
+     */
+    public static function getMessageData($member_id, $type)
+    {
+        $result = [
+            'content'    => '',
+            'type'       => '',
+            'created_at' => '',
+            'count'      =>''
+        ];
+        if (!$conn = self::getPdoInstance()) return false;
+        $sql = "
+            SELECT
+                    count(id) as count
+            FROM
+                    messages
+            WHERE
+                    be_like_member_id = $member_id
+            AND is_readed = 0
+            AND type = $type";
+        $data = $conn->query($sql)->fetch();
+        if ($data['count'] == 0) return $result;
+        $result['count']  = $data['count'];
+        $sql = "
+            SELECT
+                content,
+                created_at    
+            FROM
+                    messages
+            WHERE
+                    be_like_member_id ={$member_id}
+            AND is_readed = 0
+            AND type = $type 
+            ORDER BY id desc
+            LIMIT 1 ";
+        $Message = $conn->query($sql);
+        if ($Message) {
+            $Message = $Message->fetch();
+            $result['content'] = $Message['content'];
+            $result['type'] = $type;
+            $result['created_at'] = $Message['created_at'];
+        } 
+        return $result;
+    }
+
+    /**
+     * 获取系统消息
+     *
+     */
+    public static function getSystemMessage($member_id)
+    {
+        $result = [
+            'title'      => '',
+            'type'       => '',
+            'created_at' => '',
+            'count'      => ''
+        ];
+        $conn = self::getPdoInstance();
+        $sql = "
+            SELECT
+                    count(id) as count
+            FROM
+                    messages M
+            WHERE
+                    be_like_member_id = $member_id
+            AND is_readed = 0
+            AND type = 5
+            ORDER BY id desc
+            LIMIT 1 ";
+        $data = $conn->query($sql)->fetch();
+        if ($data['count'] == 0) return $result;
+        $result['count']  = $data['count'];
+        $sql = "
+            SELECT
+            S.title,
+            S.created_at
+            FROM
+                    messages M
+            INNER JOIN system_message_details S ON S.id = M.system_message_detail_id
+            WHERE
+                    M.be_like_member_id = $member_id
+            AND M.is_readed = 0
+            AND M.type = 5
+            ORDER BY M.id desc
+            LIMIT 1";
+        $Message = $conn->query($sql)->fetch();
+        $result['title'] = $Message['title'];
+        $result['type'] = 5;
+        $result['created_at'] = $Message['created_at'];
+        return $result;
+    }
+}
 
 new WebsocketTest();

@@ -83,4 +83,13 @@ class AnswerCommentsController extends Controller
         ]);
         return $hasCreate ? $this->responseSuccess() : $this->responseError('服务器内部错误');
     }
+
+    /**
+     * 答案评论
+     *
+     */
+    public function show(Request $Request)
+    {
+        dd(1);
+    }
 }

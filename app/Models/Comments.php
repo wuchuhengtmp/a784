@@ -4,8 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Posts;
-use App\Models\Members;
+use App\Models\{
+    Members,
+    Posts,
+    CommentLikes
+};
 
 class Comments extends Model
 {
@@ -92,4 +95,14 @@ class Comments extends Model
         }
         return $Comments->toArray();
     }
+
+    /**
+     *资源评论点赞
+     *
+     */
+    public function commentLike()
+    {
+        return $this->hasMany(CommentLikes, 'comment_id', 'id');
+    }
+
 }

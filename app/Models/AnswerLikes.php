@@ -39,5 +39,16 @@ class AnswerLikes extends Model
     {
         return $this->hasOne(Members::class, 'id', 'member_id');
     }
+
+    /**
+     * 获取自己点赞的答案ids
+     *
+     * @return Array
+     */
+    public static function getLikesByMemberId($member_id)
+    {
+        $myLikeAnswers = self::where('member_id', $member_id)->get(['answer_id']);
+        return $myLikeAnswers ? array_column($myLikeAnswers->toArray(), 'answer_id') : [];
+    }
 }
 

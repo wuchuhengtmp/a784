@@ -56,4 +56,13 @@ class CommentLikes extends Model
     {
         return $this->hasOne(Members::class, 'id', 'member_id');
     }
+
+    /**
+     * 关联评论
+     *
+     */
+    public function comment()
+    {
+        return $this->hasOne(Comments::class, 'id', 'comment_id');
+    }
 }

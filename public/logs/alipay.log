@@ -1,0 +1,42 @@
+2019-09-21 20:19:36 > yansongda.pay.INFO > Alipay App Has Started ["https://openapi.alipaydev.com/gateway.do?charset=utf-8",{"app_id":"2016052201429129","format":"JSON","charset":"utf-8","sign_type":"RSA2","version":"1.0","timestamp":"2019-09-21 20:19:36","biz_content":"{\"out_trade_no\":1569068376,\"total_amount\":\"1\",\"subject\":\"test subject - \\u6d4b\\u8bd5\",\"product_code\":\"QUICK_MSECURITY_PAY\"}","method":"alipay.trade.app.pay","sign":"YeW6yIDKzubn8BOP4sg6ByhP3uV4LEUsFYIxSpa0/9wv7nwunD70ZyyXeLQ6pnyELTu82CkWn0kOm4G0NLOdOD8d1q8V3De4TLsiMMkpdc43Q0V1Zxnvi3OSqbQUBjJ3Ou2/c/XnfrcBXKlx5q7E/OvakvxK2L9dMRt7mzapFhGTyaEaWzgQO0D/gUTlY/gzpOqlW2mipdeE0q/N1FAWx6mAkHCIhBIPIzH1F6ghjFc+iQE4pYhUE9Ck4KmlZF43CxiRFZxIEytZp4u04zf+7EHihggY1yTT/hf2Py/RZpVUpfh86giZgU0iictXpXaVjysLf0/3083vt6o7I/S4Yg=="}] 
+
+2019-09-21 21:00:35 > yansongda.pay.INFO > Alipay App Has Started ["https://openapi.alipaydev.com/gateway.do?charset=utf-8",{"app_id":"2016052201429129","format":"JSON","charset":"utf-8","sign_type":"RSA2","version":"1.0","timestamp":"2019-09-21 21:00:35","biz_content":"{\"out_trade_no\":1569070835,\"total_amount\":\"1\",\"subject\":\"test subject - \\u6d4b\\u8bd5\",\"product_code\":\"QUICK_MSECURITY_PAY\"}","method":"alipay.trade.app.pay","sign":"Aq7o/w16IvZeR2jtqZlRujVNBugLUnFl6IIt8Tu2GiFTod92WEyY60Am2ZgB0nHvBXcjAi9Ck7F/28Cd5U8wA+hmplJ1o0l6A5QK7urwgzh98CRE1zSs6YqKWygr19d+f9mJg8iTnMklGR9ofsIAQ2Z8YfkWynbXmCHYz/qqlNP91n2O4Uror8cMXc5O8DXXVPD2/AzMmmSnPvfwctWonr7kiULRa+zjyFUVxZ4qUq3nRMutqnyeKgqjVc1RVzX2nWWgnCdjONdwp08zUdaSuY5ZafpW68i8CkI8QI2Nu6vWasuvzN8cdIEkdEH9ice/TDcfgTUFVoA0CEDmw9PzCQ=="}] 
+
+2019-09-21 21:09:32 > yansongda.pay.INFO > Alipay App Has Started ["https://openapi.alipaydev.com/gateway.do?charset=utf-8",{"app_id":"2016052201429129","format":"JSON","charset":"utf-8","sign_type":"RSA2","version":"1.0","timestamp":"2019-09-21 21:09:32","biz_content":"{\"out_trade_no\":1569071372,\"total_amount\":\"1\",\"subject\":\"test subject - \\u6d4b\\u8bd5\",\"product_code\":\"QUICK_MSECURITY_PAY\"}","method":"alipay.trade.app.pay","sign":"wbN/pxof7kKqaZM2eE64irxuGQJ6umx215oH9QYEnIoQV81B7ZQjFX6ksJYs6Q86K0nz5wQ6qNVzSlaLfF+9pUtVvEPR//B+/f06osLLGlNUX50v4yPKDwFRx61CWd2agyns3OuAJ6SV2XpH46x/IvAexD3evg9z1/DtH/3bD7/WuStcmGVsdG/SMG4m5WrLkP2jjUgTtoifNLb5MA0pss3SuFkPzHwjIAdj4MxjOU06/8tmgZ142MdzWMO5qUo6GQDDfZTJ94wvRXrhvz3JFLJ89uSmaKzT7pFzQX/WTAUMaxn32eaGa/kkcnWtjSr5/Svi89XuVBQn9NDhqY0zcQ=="}] 
+
+2019-09-21 21:09:33 > yansongda.pay.INFO > Alipay App Has Started ["https://openapi.alipaydev.com/gateway.do?charset=utf-8",{"app_id":"2016052201429129","format":"JSON","charset":"utf-8","sign_type":"RSA2","version":"1.0","timestamp":"2019-09-21 21:09:33","biz_content":"{\"out_trade_no\":1569071373,\"total_amount\":\"1\",\"subject\":\"test subject - \\u6d4b\\u8bd5\",\"product_code\":\"QUICK_MSECURITY_PAY\"}","method":"alipay.trade.app.pay","sign":"bDDrF9OylULc6EpJQWJPFZkyAan26F7KBQIyorzMpskG64Jov/kfjJ/KloG/ic2xIifWNZ1H1LiuAaapYhUNCNOVpsIaFSYYvKdLrfuqRN8QequcRu0clvdKMXHRTnwkO+QvW79Z50ppWjrR8ddPTNbGguF9FTxvltw7H2Y9/24QwPSnr6l/tH81a8PNJH+7BKWyaGYWJQy7Tm30CtvKmR8kyzxzci/q/Q7E9pi9yR+/2Z23uMdj1Aj/nm+D+ajyZEqOi3mpjnihzRkde0H9xMLXubHlHjER3210JYRLinWkay5HSuxxRZ8ky30FQHYTncexEZ8GAakp2RnL5a+n3w=="}] 
+
+2019-09-21 21:10:35 > yansongda.pay.INFO > Alipay App Has Started ["https://openapi.alipaydev.com/gateway.do?charset=utf-8",{"app_id":"2016052201429129","format":"JSON","charset":"utf-8","sign_type":"RSA2","version":"1.0","timestamp":"2019-09-21 21:10:35","biz_content":"{\"out_trade_no\":1569071435,\"total_amount\":\"1\",\"subject\":\"test subject - \\u6d4b\\u8bd5\",\"product_code\":\"QUICK_MSECURITY_PAY\"}","method":"alipay.trade.app.pay","sign":"TLbBYVJmnG77xMSJzvVPNTIcGfyxrFtkddr3OkNx10OPenE983epQB5nFZGat9pgn1nRpws5vi5/s+F5R5RDhrMMPqIeP6U2/RxUU0Cd2f1dmXBwBwFvH7YKUJ36lrn6vYg7vX/ISAXOFCOmtOt9n1ec/jHFDzQvYDIdDpAJd1K2Vofi8UmoJwPcodC3prmMYADQRI3yU7Whpc+HL2gv4QG2joIL4yFaPlW2dSpH+uCwfxmJD/W0iIHqJZE+n+cutUmGrF81r7dcW903FcbcX9krVsl3SqoUuzjgwZ+IQ0oOupoz085ifoKV9onjn/joa/MEsEGTQ9p3fwO2qYGI3w=="}] 
+
+2019-09-21 21:11:03 > yansongda.pay.INFO > Alipay App Has Started ["https://openapi.alipaydev.com/gateway.do?charset=utf-8",{"app_id":"2016052201429129","format":"JSON","charset":"utf-8","sign_type":"RSA2","version":"1.0","timestamp":"2019-09-21 21:11:03","biz_content":"{\"out_trade_no\":1569071463,\"total_amount\":\"1\",\"subject\":\"test subject - \\u6d4b\\u8bd5\",\"product_code\":\"QUICK_MSECURITY_PAY\"}","method":"alipay.trade.app.pay","sign":"q/nMA2cRmVBHrOSifYlLmux880GhUnsSbSH4l/uC2dzRRhMv7vF95nXtwsPsUqAt1SbJ9eDjtXgg5l1cmzMnyG4PWi9rUZgzxYW5pDJiK2/FcnccZZoiNQoAqwbpQlCNJ63u6TB0DqK6BRAEAdyjs0psTtpH8PGe0lDsI604vcR+yoZM8DnPnfV8sUGuLmmFPvqKzUqMDCZWQL4zFShGVXIjAZC/ITlr8+gjBolqcMSGodZFE7PgijYSfaROnrHS3UnngvTBRiWTPa81hg959aylwXVbkp2bKC77ChUPuvQpYJDcK3PdltfdLrtxzYdl698k0+kbt1/eeJ7+Td6vNA=="}] 
+
+2019-09-21 21:11:52 > yansongda.pay.INFO > Received Alipay Request  
+
+2019-09-21 21:11:52 > yansongda.pay.INFO > Alipay Success Method Has Called ["https://openapi.alipaydev.com/gateway.do?charset=utf-8",[]] 
+
+2019-09-21 21:12:12 > yansongda.pay.INFO > Received Alipay Request  
+
+2019-09-21 21:12:12 > yansongda.pay.INFO > Alipay Success Method Has Called ["https://openapi.alipaydev.com/gateway.do?charset=utf-8",[]] 
+
+2019-09-21 21:15:32 > yansongda.pay.INFO > Received Alipay Request  
+
+2019-09-21 21:15:49 > yansongda.pay.INFO > Received Alipay Request {"sign":"1312312"} 
+
+2019-09-21 21:15:49 > yansongda.pay.WARNING > Alipay Sign Verify FAILED {"sign":"1312312"} 
+
+2019-09-21 21:16:36 > yansongda.pay.INFO > Received Alipay Request  
+
+2019-09-23 08:34:43 > yansongda.pay.INFO > Alipay App Has Started ["https://openapi.alipaydev.com/gateway.do?charset=utf-8",{"app_id":"2016052201429129","format":"JSON","charset":"utf-8","sign_type":"RSA2","version":"1.0","timestamp":"2019-09-23 08:34:43","biz_content":"{\"out_trade_no\":1569198883,\"total_amount\":\"1\",\"subject\":\"test subject - \\u6d4b\\u8bd5\",\"product_code\":\"QUICK_MSECURITY_PAY\"}","method":"alipay.trade.app.pay","sign":"EEwUZQj8FbMdOJrAEd/Mjrp+A+hnWnOXpV8HvbsdPoYey5yz0hhxcfSk9diPiim6G8neP5d3z4WNM8IowxpOPXb/5KdZRYgfjgKAGcVT0rC3vVjRdBtxnpp6rv1jkJLuXQUI+fZQl+AbZ0AxLTVoqW+lPbTpoX2hW4l9wqoVM49/KyF0pa5Jp4kiEwZFCKR+XHYO+pUw3/fYVolXT9CjiEAt0pJmVduffI68C7trCcEdz0KPH74VO2duVZW2KcRrUpQprMQhQCfgeH12uRg2MNzTFPDCTv7SauJsJRYNjWlDxnTvqyWvkPOSD4p98qAeO7odtfw7Xd8hIlnnhrxOew=="}] 
+
+2019-09-23 08:36:09 > yansongda.pay.INFO > Received Alipay Request  
+
+2019-09-23 08:36:09 > yansongda.pay.INFO > Alipay Success Method Has Called ["https://openapi.alipaydev.com/gateway.do?charset=utf-8",[]] 
+
+2019-09-23 08:43:36 > yansongda.pay.INFO > Received Alipay Request  
+
+2019-09-23 08:43:36 > yansongda.pay.INFO > Alipay Success Method Has Called ["https://openapi.alipaydev.com/gateway.do?charset=utf-8",[]] 
+
+2019-09-23 08:43:39 > yansongda.pay.INFO > Received Alipay Request  
+
+2019-09-23 08:43:39 > yansongda.pay.INFO > Alipay Success Method Has Called ["https://openapi.alipaydev.com/gateway.do?charset=utf-8",[]] 
+

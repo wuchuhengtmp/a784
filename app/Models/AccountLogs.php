@@ -9,6 +9,14 @@ use App\Models\AccountTransferType;
 class AccountLogs extends Model
 {
     protected $table = 'account_logs';
+    protected $fillable = [
+        'is_transfer_out',
+        'notice',
+        'member_id',
+        'money',
+        'is_out_transaction',
+        'transfer_type_id',
+    ];
 
 
     /**

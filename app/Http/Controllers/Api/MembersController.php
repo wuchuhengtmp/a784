@@ -172,7 +172,8 @@ class MembersController extends Controller
         $Request->start_school_at && $input['start_school_at'] = $Request->start_school_at;
         $Request->hobby           && $input['hobby']           = $Request->hobby;
         $Request->password        && $input['password']        = bcrypt($Request->password);
-        if (!$input) return  $this->responseError('请输入参数');
+        $Request->location        && $input['location']        = $Request->location;
+        if (!isset($input)) return  $this->responseError('请输入参数');
 
         $is_save = DB::table('members')
             ->where('id', $this->user()->id)
@@ -199,5 +200,6 @@ class MembersController extends Controller
         return  $is_save ? $this->responseSuccess() : $this->responseError();
             
     }
+
 }
 

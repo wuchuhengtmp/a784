@@ -22,3 +22,5 @@ tag
 /public/phpredisadmin/
 /public/phpredisadmin/.*
 /public/phpredisadmin/*
+test.php
+

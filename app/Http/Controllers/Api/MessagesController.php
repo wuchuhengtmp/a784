@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Models\{
-    Messages
+    Messages,
+    Members
 };
 
 class MessagesController extends Controller
@@ -13,7 +14,7 @@ class MessagesController extends Controller
      * 推送消息过来 
      *
      */
-    public function index()
+    public function send()
     {
         $data_format['likes']           = Messages::getData($this->user()->id, 1);
         $data_format['follows']         = Messages::getData($this->user()->id, 2);
@@ -24,6 +25,7 @@ class MessagesController extends Controller
             'member_id'  => $this->user()->id,
             'data'       => json_encode($data_format)
         ]);
+        return $this->responseSuccess();
     }
 
     /**
@@ -39,5 +41,54 @@ class MessagesController extends Controller
             ->where('type', $Request->type)
             ->update(['is_readed' => 1]);
         return $this->responseSuccess();
+    }
+
+    /**
+     *  消息列表
+     *
+     */ 
+    public function index(Request $Request)
+    {
+        $result = [];
+        $Request->validate([
+            'type' => 'required|exists:messages'
+        ]);
+        $Messages = Messages::where('be_like_member_id', $this->user()->id)
+            ->where('type', $Request->type)
+            ->orderBy('id', 'desc')
+            ->paginate(18);
+        if($Messages->isEmpty()) return $this->responseData($result);
+        // 非系统消息
+        if (in_array($Request->type, [1,2,3,4])) {
+            foreach($Messages as $el) {
+                $tmp['member_id']  = $el->member->id;
+                $tmp['nickname']   = $el->member->nickname;
+                $tmp['avatar']     = $el->member->avatar->url;
+                $tmp['level']      = Members::getLevelNameByMemberId($el->member_id);
+                $tmp['content']    = $el->content;
+                $tmp['created_at'] = $el->created_at->toDateTimeString();
+                // 关注消息
+                if ($Request->type == 2) {
+                    $tmp['is_follow'] = in_array($el->member_id, Members::getFollowIds($el->be_like_member_id));
+                }
+                $result['data'][] = $tmp;
+                // 标记为已读
+                $el->update(['is_readed' => 1]);
+            }
+        }
+        // 系统消息
+        if ($Request->type == 5) {
+            foreach($Messages as $el) {
+                $tmp['title']      = $el->systemMessageDetail->title;
+                $tmp['url']        = $el->systemMessageDetail->avatar->url;
+                $tmp['id']         = $el->systemMessageDetail->id;
+                $tmp['created_at'] = $el->created_at->toDateTimeString();
+                $result['data'][] = $tmp;
+                $el->update(['is_readed' => 1]);
+            }
+        }
+        $result['count'] = $Messages->total();
+        // 标记已读
+        return $this->responseData($result);
     }
 }
