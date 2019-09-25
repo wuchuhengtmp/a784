@@ -118,6 +118,7 @@ class FollowsController extends Controller
             ->first('id')
         ) 
             return $this->responseError('你已经关注这个用户了');
+        if ($this->user()->id == $Request->member_id) return $this->responseError('关注失败，您不能关注您自己');
         $memberFollow = MemberFollow::create(['member_id'=> $this->user()->id, 'follow_member_id'=>$Request->member_id]);
         if (!$memberFollow) {
             return $this->responseError('服务器内部错误');
