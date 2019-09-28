@@ -46,6 +46,12 @@ class Posts extends Model
     }
 
     /**
+     * 图片
+     *
+     */
+    /* public function */ 
+
+    /**
     * 关联用户信息
     *
     */

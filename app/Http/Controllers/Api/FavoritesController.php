@@ -17,14 +17,15 @@ class FavoritesController extends Controller
     public function myVideos()
     {
         $data = []; 
-        $Favorites = Favorites::where('member_id', $this->user()->id)
+        $Favorites = Favorites::where('favorites.member_id', $this->user()->id)
+            ->where('posts.content_type', 1)
+            ->join('posts', 'posts.id', '=', 'favorites.post_id')  
             ->with(['post' => function($query) {
                 $query->withCount(['favorites']);
             }])
             ->paginate(18);
-        if ($Favorites) {
+        if (!$Favorites->isEmpty()) {
             foreach($Favorites as $el) {
-                if ($el->post->content_type == 1) {
                     $tmp['id']              = $el->post->id;
                     $tmp['title']           = $el->post->title;
                     $tmp['video_url']       = $el->post->video_url;
@@ -32,7 +33,6 @@ class FavoritesController extends Controller
                     $tmp['clicks_count']    = $el->post->clicks;
                     $tmp['favorites_count'] = $el->post->favorites_count;
                     $data['data'][]                 = $tmp;
-                }
             }
             $data['count'] = $Favorites->total();
         }
@@ -56,7 +56,7 @@ class FavoritesController extends Controller
         if ($Favorites) {
             foreach($Favorites as $el) {
                 if ($el->post->content_type == 2 && $el->post->deleted_at == null) {
-                    $tmp['id']             = $el->id;
+                    $tmp['id']             = $el->post->id;
                     $tmp['title']          = $el->post->title;
                     $tmp['nickname']       = $el->post->member->nickname;
                     $tmp['created_at']     = $el->created_at->toDateTimeString();

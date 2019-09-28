@@ -29,6 +29,7 @@ class AnswersController extends Controller
         $Posts = Posts::where('content_type', 3) 
            ->with(['member'])
            ->withCount(['AnswerComments'])
+            ->orderBy('created_at', 'desc')
            ->paginate(18);
         if ($Posts) {
             $tmp_data = [];
@@ -272,12 +273,14 @@ class AnswersController extends Controller
         if ($Answers)  {
             $tmp_data = [];
             foreach($Answers as $el) {
-                $tmp['id'] = $el->id;
-                $tmp['content'] = $el->content;
-                $tmp['answer_comments_count']  = $el->answer_comments_count;
-                $tmp['created_at'] = $el->created_at->toDateTimeString();
-                $tmp['post_id'] = $el->post_id;
-                $tmp_data[] = $tmp;
+                $tmp['id']                    = $el->id;
+                $tmp['content']               = $el->content;
+                $tmp['answer_comments_count'] = $el->answer_comments_count;
+                $tmp['nickname']              = $el->member->nickname;
+                $tmp['avatar']                = $this->transferUrl($el->member->avatar->url);
+                $tmp['created_at']            = $el->created_at->toDateTimeString();
+                $tmp['post_id']               = $el->post_id;
+                $tmp_data[]                   = $tmp;
             }
             $data['data'] = $tmp_data;
             $data['count'] = $Answers->total();

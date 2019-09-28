@@ -55,7 +55,7 @@ $api->version('v1', [
         ->name('api.authorizations.destroy');
      // 需要 token 验证的接口
 
-    $api->group(['middleware' => 'api.auth'], function($api) {
+    $api->group(['middleware' => ['checktoken', 'api.auth']], function($api) {
         // 首页视频分页
         $api->get('videos', 'VideosController@index')->name('api.video.index');
         //视频详情
@@ -216,6 +216,8 @@ $api->version('v1', [
         // 置顶
         $api->post('topsearch/{post_id}', 'PayController@topsearchStore')
             ->where(['post_id' => '[0-9]+']);
+        // 绑定手机号
+        $api->put('members/me/phone', 'MembersController@updatePhone');
         //**************** 版本2接口*********//
         //获取资源评论
         $api->get('v2/comments/posts/{post_id}', 'CommentsController@postShow')
@@ -241,4 +243,8 @@ $api->version('v1', [
     // 支付宝回调请求 
     $api->post('pays/alipay/natify', 'PayController@notify');
     $api->get('pays/alipay/natify', 'PayController@notify');
+    //用户协议
+    $api->get('agreement', 'ConfigsController@agreementShow');
+    // 
+    $api->get('disclaimer', 'ConfigsController@disclaimersShow');
 });

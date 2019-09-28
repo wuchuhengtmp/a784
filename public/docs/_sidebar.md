@@ -7,3 +7,9 @@
 
 - [置顶](topsearch.md) 
 
+- [绑定手机](bindphone.md) 
+
+- [协议和免责(不用token)](agreement.md) 
+
+
+

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use Yansongda\Pay\Pay;
 use Yansongda\Pay\Log;
 use Illuminate\Http\Request;
+use App\Http\Requests\Api\PayRequest;
 use App\Models\{
     Posts,
     Members,
@@ -16,8 +17,7 @@ use App\Models\{
 class PayController extends Controller
 {
     protected $config = [
-        'app_id' => '2016052201429129',
-//        'notify_url' => env('NOTIFY_URL'),
+        'app_id' => '2019092067583963',
         'return_url' => '',
 
         /* 'ali_public_key' => env('ALI_PUBLIC_KEY'), */
@@ -25,7 +25,7 @@ class PayController extends Controller
         /* 'private_key' => env('PRIVATE_KEY'), */
         'log' => [ // optional
             'file' => './logs/alipay.log',
-            'level' => 'info', // 建议生产环境等级调整为 info，开发环境为 debug
+            'level' => 'debug', // 建议生产环境等级调整为 info，开发环境为 debug
             'type' => 'single', // optional, 可选 daily.
             'max_file' => 30, // optional, 当 type 为 daily 时有效，默认 30 天
         ],
@@ -45,17 +45,18 @@ class PayController extends Controller
         
     }
 
-    public function index()
+    public function index(PayRequest $Request)
     {
         $order = [
             'out_trade_no' => time(),
-            'total_amount' => '1',
-            'subject' => 'test subject - 测试',
+            'total_amount' => $Request->expense,
+            'subject' => '充值',
         ];
-
         $alipay = Pay::alipay($this->config)->app($order);
-        return $alipay;
-        /* return $alipay->send();// laravel 框架中请直接 `return $alipay` */
+
+        return $this->responseData([
+            'signture' => $alipay->getContent()
+        ]);
     }
 
     public function return()
@@ -106,7 +107,7 @@ class PayController extends Controller
         // 龙币支付 
         if ($Request->pay_type == 1) {
             $Member = Members::find($this->user()->id);
-            if ($Member->balance <  $Request->playment) return  $this->responseError('余额不足额');
+            if ($Member->balance < $Request->expense) return  $this->responseError('余额不足额');
             $Member->balance -= $Request->expense;
             $Member->save();
             $Price = Configs::where('name', 'top_search_price')->first();
@@ -118,7 +119,7 @@ class PayController extends Controller
                 'price'          => $Price->value . 's/元' ,
                 'expense'        => $Request->expense,
                 'top_time_limit' => $Request->expense * $Price->value,
-                'top_end_time'   => date("y-m-d H:i:s", time() + $Request->expense * $Price->value),
+                'top_end_time'   => date("Y-m-d H:i:s", time() + $Request->expense * intval($Price->value)),
                 'transfer_type'  => 1
             ]);
             // 记帐

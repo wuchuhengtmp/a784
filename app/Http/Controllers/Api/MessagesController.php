@@ -67,6 +67,8 @@ class MessagesController extends Controller
                 $tmp['level']      = Members::getLevelNameByMemberId($el->member_id);
                 $tmp['content']    = $el->content;
                 $tmp['created_at'] = $el->created_at->toDateTimeString();
+                $tmp['post_id']    = $el->post_id;
+                $tmp['content_type'] = $el->content_type;
                 // 关注消息
                 if ($Request->type == 2) {
                     $tmp['is_follow'] = in_array($el->member_id, Members::getFollowIds($el->be_like_member_id));

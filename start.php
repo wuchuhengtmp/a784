@@ -27,20 +27,24 @@ class WebsocketTest {
                 switch($data['type']) {
                     // 登录
                 case 'login' :
-                    if (!isset($data['member_id'])) $this->server->close($frame->fd);
+                    if (!isset($data['token'])) $this->server->close($frame->fd);
+                    $member_id = self::parseToken($data['token'])['sub'];
                     // 登记连接
                     $Redis = $this->getRedisInstance();
-                    $Redis->hset(getenv('REDIS_PREFIX') . $data['member_id'], $frame->fd, date('Y-m-d H:i:s', time()));
+                    $Redis->hset(getenv('REDIS_PREFIX') . $member_id, $frame->fd, $data['token']);
                     $Redis->hset(getenv('REDIS_PREFIX') . 'relevence', $frame->fd, $data['member_id']);
-                    $data_format['likes']           = self::getMessageData($data['member_id'], 1);
-                    $data_format['follows']         = self::getMessageData($data['member_id'], 2);
-                    $data_format['comments']        = self::getMessageData($data['member_id'], 3);
-                    $data_format['replies']         = self::getMessageData($data['member_id'], 4);
-                    $data_format['system_messages'] = self::getSystemMessage($data['member_id']);
+                    $data_format['likes']           = self::getMessageData($member_id, 1);
+                    $data_format['follows']         = self::getMessageData($member_id, 2);
+                    $data_format['comments']        = self::getMessageData($member_id, 3);
+                    $data_format['replies']         = self::getMessageData($member_id, 4);
+                    $data_format['system_messages'] = self::getSystemMessage($member_id);
                     $this->server->push($frame->fd, json_encode([
                         'type'    => 'data', 
                         'data'    =>$data_format
                     ]));
+                    break;
+                case 'ping' : 
+                    /* var_dump('ping'); */
                     break;
                 }
             }
@@ -205,6 +209,17 @@ class WebsocketTest {
         $result['type'] = 5;
         $result['created_at'] = $Message['created_at'];
         return $result;
+    }
+
+    /**
+     * 解析token
+     *
+     * @return payload 数组
+     */
+    public static function parseToken(string $token) 
+    {
+        list($header, $payload, $signature) = explode('.', $token); 
+        return json_decode(base64_decode($payload), true);
     }
 }
 

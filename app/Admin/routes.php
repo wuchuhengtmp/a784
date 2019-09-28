@@ -20,4 +20,5 @@ Route::group([
     $router->resource('system-message-details', SystemMessageDetailsController::class);
     $router->resource('top-search-orders', TopSearchOrdersController::class);
     $router->resource('configs', ConfigsController::class);
+      $router->resource('statement', StatementController::class);
 });

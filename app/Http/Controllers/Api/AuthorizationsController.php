@@ -8,6 +8,10 @@ use App\Models\Members;
 use App\Models\Images;
 use App\Http\Requests\Api\AuthorizationRequest;
 use App\Http\Requests\Api\VerificationMemberInfoRequest;
+use App\Models\{
+    BaseModel,
+    Tokens
+};
 
 class AuthorizationsController extends Controller
 {
@@ -35,7 +39,10 @@ class AuthorizationsController extends Controller
                 }
                 $oauthUser = $driver->userFromToken($token);
             } catch (\Exception $e) {
-                return $this->response->errorUnauthorized('参数错误，未获取用户信息');
+                    return response()->json([
+                        'message' => '参数错误，未获取用户信息',
+                        'status_code' =>406 
+                    ], 200);
             }
         }
         switch ($type) {
@@ -64,11 +71,17 @@ class AuthorizationsController extends Controller
             case 'code' :
                 $verifyData = \Cache::get($request->verification_key);
                 if (!$verifyData) {
-                    return $this->response->error('验证码已失效', 422);
+                    return response()->json([
+                        'message' => '验证码已失效',
+                        'status_code' =>405 
+                    ], 200);
                 }
                 if (!hash_equals($verifyData['code'], $request->verification_code)) {
                     // 返回401
-                    return $this->response->errorUnauthorized('验证码错误');
+                    return response()->json([
+                        'message' => '验证码错误',
+                        'status_code' =>405 
+                    ], 200);
                 }
                 // 清除缓存
                 env('APP_DEBUG') || \Cache::forget($request->verification_key);
@@ -120,6 +133,14 @@ class AuthorizationsController extends Controller
      */
     protected function respondWithToken($token)
     {
+        // 登记token
+        $member_id = $this->_getIdByToken($token);
+        Tokens::where('member_id', $member_id )->update(['status' => 0]);
+        Tokens::create([
+            'token' => $token, 
+            'status' => 1,
+            'member_id' => $member_id
+        ]);
         return $this->responseData([
             'access_token' => $token,
             'token_type' => 'Bearer',
@@ -141,5 +162,17 @@ class AuthorizationsController extends Controller
     {
         \Auth::guard('api')->logout();
         return $this->responseSuccess();
+    }
+
+    /**
+     * 获取id
+     *
+     */
+    protected function _getIdByToken(string $token)
+    {
+        list($header, $player, $signture) = array_map(function($el) {
+            return base64_decode($el);
+        }, explode('.', $token));
+        return json_decode($player, true)['sub'];
     }
 }

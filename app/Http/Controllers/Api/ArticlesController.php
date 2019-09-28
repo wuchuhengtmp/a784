@@ -92,13 +92,16 @@ class ArticlesController extends Controller
         $data['member_id']   = $Posts->member_id;
         $data['title']       = $Posts->title;
         $data['content']     = $Posts -> content;
+        $data['comment_count'] = Comments::where('pid', 0)->where('post_id', $Request->post_id)->count();
         $data['created_at']  = $Posts->created_at->toDateTimeString();
         $data['nickname']    = $Posts->member->nickname;
         $data['avatar']      = $this->transferUrl($Posts->member->avatar->url);
         $data['is_follow']   = in_array($Posts->member_id, $my_follow_ids);
         $data['is_like']     = in_array($Posts->id, $my_like_post_ids);
         $data['is_favorite'] = in_array($Posts->id, $my_favorie_ids);
-        $data['images']      = $Posts->images->toArray();
+        $data['images']      = array_map(function($el){
+            return $el['url'];
+        } ,$Posts->images->toArray());
         $data['comments']    = null;
         if ($Posts->comments){
             $comments  = Comments::where('post_id', $Request->post_id)
@@ -141,6 +144,7 @@ class ArticlesController extends Controller
         $Posts = Posts::where('content_type', 2) 
                 ->where('member_id', $this->user()->id)
                 ->withCount(['comments'])
+                ->orderBy('created_at', 'desc')
                 ->paginate(18);
         if ($Posts) {
             $tmp_data = [];
@@ -174,6 +178,7 @@ class ArticlesController extends Controller
         $Posts = Posts::where('content_type', 2) 
                 ->where('member_id', $Request->member_id)
                 ->withCount(['comments'])
+                ->orderBy('created_at', 'desc')
                 ->paginate(18);
         if ($Posts) {
             $tmp_data = [];

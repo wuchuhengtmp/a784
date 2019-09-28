@@ -13,9 +13,8 @@ use App\Models\{
     SystemMessageDetails
 };
     
-class Messages extends Model
+class Messages extends BaseModel
 {
-    public static $_redis;
     protected $fillable = [
         'answer_like_id',
         'comment_like_id',
@@ -29,7 +28,9 @@ class Messages extends Model
         'member_id',
         'member_follow_id',
         'post_comment_id',
-        'answer_comment_id'
+        'answer_comment_id',
+        'post_id',
+        'content_type'
     ];
     
     /**
@@ -78,6 +79,8 @@ class Messages extends Model
             case 2 : 
                 $data['content'] = $postLike->member->nickname . "点赞你的文章" ;
         }
+        $data['content_type']  = $postLike->post->content_type;
+        $data['post_id']       = $postLike->post->id;
         $isCreate = self::create($data);
     }
 
@@ -111,6 +114,8 @@ class Messages extends Model
             case 2 : 
                 $data['content'] = $commentLike->member->nickname . "点赞你的文章评论" ;
         }
+        $data['post_id']      = $commentLike->post->id;
+        $data['content_type'] = $commentLike->post->content_type;
         $isCreate = self::create($data);
     }
 
@@ -138,6 +143,8 @@ class Messages extends Model
         $data['be_like_member_id'] = Answers::find($answerLike->answer_id)->member_id;
         $data['content']           = $answerLike->member->nickname . "点赞你的答案" ;
         $data['type']              = 1;
+        $data['post_id']           = $answerLike->post->id;
+        $data['content_type']      = 3;
         $isCreate = self::create($data);
     }
 
@@ -166,6 +173,8 @@ class Messages extends Model
         $data['be_like_member_id']      = $Post->member->id;
         $data['content']                = $answerCommentLike->member->nickname . "点赞你的答案评论" ;
         $data['type']                   = 1;
+        $data['post_id']                = $answerCommentLike->answer->post->id;
+        $data['content_type']           = 3;
         $isCreate = self::create($data);
     }
 
@@ -217,6 +226,8 @@ class Messages extends Model
             default:
         $data['content']  = $Comment->member->nickname . "点评你的作品";
         }
+        $data['post_id']      = $Comment->post->id;
+        $data['content_type'] = $Comment->post->content_type;
         $data['type'] = 3;
         self::create($data);
     }
@@ -235,6 +246,8 @@ class Messages extends Model
         $data['be_like_member_id'] = Comments::find($Comment->pid)->id;
         $data['content']           = $Comment->content;
         $data['type']              = 4;
+        $data['post_id']           = $Comment->post->id;
+        $data['content_type']      = $Comment->post->content_type;
         self::create($data);
     }
 
@@ -251,6 +264,8 @@ class Messages extends Model
         $data['be_like_member_id'] = AnswerComments::find($answerComment->pid)->member_id;
         $data['content']           = $answerComment->content;
         $data['type']              = 4;
+        $data['post_id']           = $answerComment->post->id;
+        $data['content_type']      = $answerComment->post->content_type;
         self::create($data);
     }
 
@@ -366,21 +381,4 @@ class Messages extends Model
         });
     }
 
-    /**
-     * redis实例
-     *
-     */
-    public static function getRedisInstance()
-    {
-        if(!isset(self::$_redis)) {
-            $redis = new \Redis();
-            $redis->connect(
-                getenv('REDIS_HOST'),
-                getenv('REDIS_PORT')
-            );
-            $redis->select(env('REDIS_DB'));
-            self::$_redis = $redis;
-        }
-        return self::$_redis;
-    }
 }

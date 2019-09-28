@@ -102,6 +102,7 @@ class MembersController extends Controller
             'avatar',
             'education'
         ])->toArray();
+        $data['created_at'] = date("Y-m-d", strtotime($Member->created_at));
         return $this->responseData($data);
     }
 
@@ -173,6 +174,7 @@ class MembersController extends Controller
         $Request->hobby           && $input['hobby']           = $Request->hobby;
         $Request->password        && $input['password']        = bcrypt($Request->password);
         $Request->location        && $input['location']        = $Request->location;
+        $Request->next_plan       && $input['next_plan']       = $Request->next_plan;
         if (!isset($input)) return  $this->responseError('请输入参数');
 
         $is_save = DB::table('members')
@@ -193,12 +195,49 @@ class MembersController extends Controller
      */
     public function avatarUpdate(Request $Request)
     {
-        $Member = Members::with(['avatar'])->where('id', $this->user->id)->first();
-        $Avatar = $Member->avatar;
+        $Member      = Members::with(['avatar'])->where('id', $this->user->id)->first();
+        $Avatar      = $Member->avatar;
         $Avatar->url = $this->DNSupload($Request->file('avatar')->store('public'));
-        $is_save = $Avatar->save();
+        $is_save     = $Avatar->save();
         return  $is_save ? $this->responseSuccess() : $this->responseError();
-            
+    }
+
+    
+    /**
+     * 绑定手机
+     *
+     * @http PUT
+     */
+    public function updatePhone(Request $request)
+    {
+        $verifyData = \Cache::get($request->verification_key);
+        if (!$verifyData) {
+            return $this->response->error('验证码已失效', 422);
+        }
+        if (!hash_equals($verifyData['code'], $request->verification_code)) {
+            // 返回401
+            return $this->response->errorUnauthorized('验证码错误');
+        }
+        $Me = Members::find($this->user()->id);
+        if($Me->phone) {
+            $hasPone = Members::where('phone', $verifyData['phone'])
+                ->where('phone', $Me->phone)
+                ->first();
+            if ($hasPone) {
+                return $this->response->errorUnauthorized('您不能绑定同一手机号');
+            }
+        } else {
+            $hasReg = Members::where('phone', $verifyData['phone']) 
+                ->first();
+            if ($hasReg) {
+                return $this->response->errorUnauthorized('这个手机号已经注册了');
+            }
+        }
+        $Me->phone = $verifyData['phone'] ;
+        $Me->save();
+        // 清除验证码缓存
+        \Cache::forget($request->verification_key);
+        return $this->responseSuccess();
     }
 
 }

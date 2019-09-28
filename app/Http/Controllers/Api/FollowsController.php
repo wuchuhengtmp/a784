@@ -30,10 +30,12 @@ class FollowsController extends Controller
             whereIn('member_id',$my_follow_member_ids)
             ->with(['member', 'comments', 'images'])
             ->withCount(['comments', 'likes'])
+            ->orderBy('created_at', 'desc')
             ->paginate(18);
         $data = []; 
         if ($Posts){ 
             foreach($Posts as $el) {
+                $tmp = [];
                 $tmp['title']          = $el->title;
                 $tmp['post_id']        = $el->id;
                 $tmp['created_at']     = $el->created_at->toDateTimeString();
@@ -68,7 +70,7 @@ class FollowsController extends Controller
                         $tmp_comment['content']    = $comment_el->content;
                         $tmp['comments'][] = $tmp_comment;
                     }
-                $tmp['comments']  = isset($tmp['comments']) ?  $this->_arrToTree($tmp['comments']) : [];
+                $tmp['comments']  = count($tmp['comments']) > 0 ?  $this->_arrToTree($tmp['comments']) : [];
                 }
                 $data['data'][] = $tmp;
             }
