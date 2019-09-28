@@ -10,12 +10,14 @@ class AccountLogs extends Model
 {
     protected $table = 'account_logs';
     protected $fillable = [
-        'is_transfer_out',
+        'type',
         'notice',
         'member_id',
         'money',
-        'is_out_transaction',
         'transfer_type_id',
+        'status',
+        'maney',
+        'out_trade_no'
     ];
 
 
@@ -54,8 +56,7 @@ class AccountLogs extends Model
         $has_data = self::
         whereBetween('created_at', ["$start", "$end"])
             ->Where('member_id', $id)
-            ->Where('is_out_transaction', 1)
-            ->Where('is_transfer_out', 0)
+            ->WhereIn('type', [1,3])
             ->orderby('money', 'desc')
             ->first();
         if ($has_data)

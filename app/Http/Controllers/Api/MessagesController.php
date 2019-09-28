@@ -51,7 +51,7 @@ class MessagesController extends Controller
     {
         $result = [];
         $Request->validate([
-            'type' => 'required|exists:messages'
+            'type' => 'required|in:1,2,3,4,5'
         ]);
         $Messages = Messages::where('be_like_member_id', $this->user()->id)
             ->where('type', $Request->type)

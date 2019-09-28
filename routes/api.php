@@ -164,7 +164,7 @@ $api->version('v1', [
         $api->get('levels', 'LevelsController@index');
         // 我的收藏-视频
         $api->get('members/me/favorites/videos', 'FavoritesController@myVideos');
-        // 我的收藏-视频
+        // 我的收藏-文章
         $api->get('members/me/favorites/articles', 'FavoritesController@myArticles');
         // 编辑资料
         $api->patch('members/me', 'MembersController@updateMe');
@@ -211,8 +211,6 @@ $api->version('v1', [
         $api->get('messages/list', 'MessagesController@index'); 
         // 支付宝签名订单
         $api->get('pays/alipay', 'PayController@index');
-        // 提交支付结果 
-        $api->get('pays/alipay/return', 'PayController@return');
         // 置顶
         $api->post('topsearch/{post_id}', 'PayController@topsearchStore')
             ->where(['post_id' => '[0-9]+']);
@@ -243,8 +241,12 @@ $api->version('v1', [
     // 支付宝回调请求 
     $api->post('pays/alipay/natify', 'PayController@notify');
     $api->get('pays/alipay/natify', 'PayController@notify');
+    $api->post('natify', 'PayController@notify');
+    $api->get('natify', 'PayController@notify');
+    // 提交支付结果 
+    $api->get('pays/alipay/return', 'PayController@return');
     //用户协议
     $api->get('agreement', 'ConfigsController@agreementShow');
-    // 
     $api->get('disclaimer', 'ConfigsController@disclaimersShow');
 });
+Route::get('natify', 'PayController@notify');

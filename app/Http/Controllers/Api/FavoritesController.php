@@ -53,7 +53,7 @@ class FavoritesController extends Controller
                 $query->withCount(['comments']);
             }])
             ->paginate(18);
-        if ($Favorites) {
+        if (!$Favorites->isEmpty()) {
             foreach($Favorites as $el) {
                 if ($el->post->content_type == 2 && $el->post->deleted_at == null) {
                     $tmp['id']             = $el->post->id;
@@ -64,6 +64,7 @@ class FavoritesController extends Controller
                                                     return $this->transferUrl($arr_el['url'] );
                                                 }, $el->post->images->toArray());
                     $tmp['clicks_count']   = $el->post->clicks;
+                    $tmp['comments_count'] = $el->post->comments_count;
                     $data['data'][]        = $tmp;
                 }
             }

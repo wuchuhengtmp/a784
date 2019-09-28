@@ -1,0 +1,3 @@
+PHP Warning:  PDO::__construct(): MySQL server has gone away in /www/wwwroot/a784admin.mxnt.net/start.php on line 111
+
+Warning: PDO::__construct(): MySQL server has gone away in /www/wwwroot/a784admin.mxnt.net/start.php on line 111

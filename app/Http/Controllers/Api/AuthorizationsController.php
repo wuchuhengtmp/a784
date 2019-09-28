@@ -32,7 +32,6 @@ class AuthorizationsController extends Controller
                     $token = array_get($response, 'access_token');
                 } else {
                     $token = $request->access_token;
-
                     if ($type == 'weixin') {
                         $driver->setOpenId($request->openid);
                     }
@@ -83,11 +82,18 @@ class AuthorizationsController extends Controller
                         'status_code' =>405 
                     ], 200);
                 }
+                
                 // 清除缓存
                 env('APP_DEBUG') || \Cache::forget($request->verification_key);
                 $member = Members::where('phone', $verifyData['phone'])->first();
                 if (!$member) {
-                    $member = Members::create(['phone'=> $verifyData['phone']]);  
+                    $Image = Images::create([
+                        'url' =>  'http://cdn.hbbhsjz.cn/public/qZtrObTsSnlaN29nRt44cj3FP5NJNpHwasXkPMAe.jpeg'
+                    ]); 
+                    $member = Members::create(['phone'=> $verifyData['phone'],
+                        'nickname' => '手机用户_' . rand(1, 999),
+                        'avatar_image_id' => $Image->id 
+                    ]);  
                 }
         }
         $token=\Auth::guard('api')->fromUser($member);
