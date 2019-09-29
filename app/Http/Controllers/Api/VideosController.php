@@ -82,11 +82,15 @@ class VideosController extends Controller
             ->find($id);
         if (!$Post) 
             return $this->response->errorNotFound();
-        
-        if ($url = $Post->member->avatar->url)  {
+        // :xxx bug 可能有url
+         if (isset($Post->member->avatar->url))  {
+            $url = $Post->member->avatar->url;
             if(!isset(parse_url($url)['host'])) {
                $Post->member->avatar->url = env('APP_URL')  . '/'  . $url;
             }
+        } else {
+            
+               $Post->member->avatar->url = '';
         }
         $like_count = PostLikes::where('post_id', $id)->count();
         $myLikePosts = PostLikes::where('member_id', $this->user()->id)->get('post_id');
