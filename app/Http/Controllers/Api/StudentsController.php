@@ -44,7 +44,7 @@ class StudentsController extends Controller
                 $tmp['content_type'] = $el->content_type;
                 $tmp['created_at'] = $el->created_at->toDateTimeString();
                 $tmp['tag_id']  = $el->tag_id;
-                $tmp['avatar']  = $el->member->avatar->url;
+                $tmp['avatar']  = $el->member->avatar->url ?? '';
                 $tmp['comments_count'] = $el->comments_count ;
                 $tmp['images']         = array_map(function($image) {
                     return $this->transferUrl($image['url']);

@@ -39,7 +39,7 @@ class AnswersController extends Controller
                 $tmp['member_id'] = $el->member->id;
                 $tmp['created_at'] = $el->created_at->toDateTimeString();
                 $tmp['id'] = $el->id;
-                $tmp['avatar'] = $this->transferUrl($el->member->avatar->url);
+                $tmp['avatar'] = isset($el->member->avatar->url) ? $this->transferUrl($el->member->avatar->url) : '';
                 $tmp['answer_comments_count'] =  $el->answer_comments_count;
                 $tmp_data[] = $tmp;
             }
@@ -94,7 +94,7 @@ class AnswersController extends Controller
         $data['id']                    = $hasData->id;
         $data['title']                 = $hasData->title;
         $data['nickname']              = $hasData->member->nickname;
-        $data['avatar']                = $this->transferUrl($hasData->member->avatar->url);
+        $data['avatar']                = isset($hasData->member->avatar->url) ? $this->transferUrl($hasData->member->avatar->url) : '';
         $data['answer_comments_count'] = $hasData->answer_comments_count;
         $data['member_id']             = $hasData->member->id;
         $data['is_follow']             = in_array($hasData->member->id, $my_follow_ids);

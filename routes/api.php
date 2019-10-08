@@ -66,6 +66,8 @@ $api->version('v1', [
         $api->get('videos/comments/{id}', 'VideosController@Comments')->name('api.comments.show');
         // 当前登录用户信息
         $api->get('members/me', 'MembersController@me')->name('api.member.me');
+        //上传文件
+        $api->post('resource', 'ResourceController@store');
         //视频上传
         $api->post('videos', 'VideosController@store')->name('api.video.store');
         //文章上传

@@ -190,6 +190,7 @@ class FollowsController extends Controller
         $data = []; 
         if ($Posts){ 
             foreach($Posts as $el) {
+                if (isset($tmp)) unset($tmp);
                 $tmp['title']          = $el->title;
                 $tmp['post_id']        = $el->id;
                 $tmp['created_at']     = $el->created_at->toDateTimeString();
@@ -221,7 +222,10 @@ class FollowsController extends Controller
                         ->limit(3)
                         ->paginate(2);
                     $tmp['comments']['count'] = $comment_count;
+                    /* dd($comments->toArray());exit; */
                     foreach($comments as $comment_el) {
+                        /* dump($comment_el->toArray()); */
+                        if (isset($tmp_comment))  unset($tmp_comment);
                         $tmp_comment['nickname']   = $comment_el->member->nickname;
                         $tmp_comment['avatar']     = $this->transferUrl($comment_el->member->avatar->url);
                         $tmp_comment['created_at'] = $comment_el->created_at->toDateTimeString();
@@ -240,15 +244,16 @@ class FollowsController extends Controller
                             $Replies = Comments::where('post_id', $el->id)
                                 ->where('path', 'like', "0-" . $el->comment_el . '%')
                                 ->paginate(2);
+                            if (isset($tmp_comment))  unset($tmp_reply);
                             foreach($Replies as $k=>$reply_el) {
-                                $tmp_reply['nickname']   = $comment_el->member->nickname;
-                                $tmp_reply['avatar']     = $this->transferUrl($comment_el->member->avatar->url);
-                                $tmp_reply['created_at'] = $comment_el->created_at->toDateTimeString();
-                                $tmp_reply['id']         = $comment_el->id;
-                                $tmp_reply['pid']        = $comment_el->pid;
+                                $tmp_reply['nickname']   = $reply_el->member->nickname;
+                                $tmp_reply['avatar']     = $this->transferUrl($reply_el->member->avatar->url);
+                                $tmp_reply['created_at'] = $reply_el->created_at->toDateTimeString();
+                                $tmp_reply['id']         = $reply_el->id;
+                                $tmp_reply['pid']        = $reply_el->pid;
                                 $tmp_reply['level']      = Members::getLevelNameByMemberId($reply_el->member_id);
-                                $tmp_reply['content']    = $comment_el->content;
-                                $tmp_reply['PTOC']       = $k === 0 ? $comment_el->member->nickname . ' 回复 ' . $comment_el->member->nickname : $comment_el->member->nickname . ' 回复 ' . $Replies[--$k]->member->nickname;
+                                $tmp_reply['content']    = $reply_el->content;
+                                $tmp_reply['PTOC']       = $k === 0 ? $reply_el->member->nickname . ' 回复 ' . $comment_el->member->nickname : $reply_el->member->nickname . ' 回复 ' . $Replies[--$k]->member->nickname;
                                 $tmp_comment['replies']['data'][] = $tmp_reply;
                             }
                         }
@@ -256,6 +261,7 @@ class FollowsController extends Controller
                     }
                     $tmp['comments']['count'] = $comments->total();
                 }
+                /* dump($tmp); */
                 $data['data'][] = $tmp;
             }
             $data['count'] = $Posts->total();

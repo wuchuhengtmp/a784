@@ -171,8 +171,7 @@ class VideosController extends Controller
     */
     public function store(PostVideoRequest $Request, Posts $Post)
     {
-       $path = $Request->file('video')->store('public');
-       $data['video_url']    = $this->DNSupload($path);
+       $data['video_url']    = $Request->video;
        $data['title']        = $Request->title;
        $data['tag_id']       = $Request->tag_id;
        $data['content_type'] = 1;

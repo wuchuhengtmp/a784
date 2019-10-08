@@ -71,8 +71,8 @@ class CommentsController extends Controller
     public function postShow(Request $Request)
     {
         $Request->validate([
-            'comment_limit'             => 'filled|numeric',
-            'reply_limit'             => 'filled|numeric',
+            'comment_limit' => 'filled|numeric',
+            'reply_limit'   => 'filled|numeric',
         ]);
         $result = [
             'data'  => [],
@@ -83,18 +83,13 @@ class CommentsController extends Controller
         $reply_limit   = $Request->reply_limit ??  3;
         $hasPost = Posts::find($Request->post_id);
         if (!$hasPost) return $this->responseError('没有这个资源');
-        $Comments = Comments::where('post_id', $Request->post_id) 
+        $Comments = Comments::where('comments.post_id', $Request->post_id) 
             ->select(DB::raw(
-                "CONCAT(comments.path, '-',  comments.id) AS order_weight, comments.*, 
-                (SELECT COUNT(*) FROM comment_likes WHERE comment_likes.comment_id = comments.id ) AS likes_count"
+                "(SELECT COUNT(*) FROM comment_likes WHERE comment_likes.comment_id = comments.id ) AS likes_count, comments.*"
             ))
-            ->join('comment_likes', 'comment_likes.comment_id', '=' , 'comments.id')
-            ->where('pid', 0)
+            ->where('comments.pid', 0)
             ->orderBy('id', 'desc')
             ->paginate($comment_limit);
-        $result['total']= Comments::where('post_id', $Request->post_id) 
-            ->where('pid', 0)
-            ->count();
         $result['count'] = $Comments->total();
         if(!$Comments->isEmpty()) {
             foreach($Comments as $el) {
@@ -155,7 +150,6 @@ class CommentsController extends Controller
      */
     public function postReplyShow(Request $Request)
     {
-        
         $result = [
             'data' => [],
             'count' => 0

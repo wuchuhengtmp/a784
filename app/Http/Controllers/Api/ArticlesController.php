@@ -37,9 +37,9 @@ class ArticlesController extends Controller
             'member_id'    => $this->user()->id,
         ]);
         // 单图保存
-        if(!$Request->file('image2') )  {
+        if(!$Request->file('image3') )  {
             $Image = Images::create([
-                'url'  => $this->DNSupload($Request->file('image1')->store('public')),
+                'url'  => $Request->image1,
                 'from' => 2
             ]);
            $PostsImage = Db::table('post_image')->insert([
@@ -48,10 +48,10 @@ class ArticlesController extends Controller
            ]);
         }
         //3图保存
-        if($Request->file('image2') && $Request->file('image3'))  {
+        if($Request->file('image1') && $Request->file('image3'))  {
             for($i=1; $i<=3; $i++) {
                 $Image = Images::create([
-                        'url'  => $this->DNSupload($Request->file('image' . $i)->store('public')),
+                    'url'  => $Request->image . $i,
                         'from' => 2
                     ]);
                 $PostsImage = Db::table('post_image')->insert([

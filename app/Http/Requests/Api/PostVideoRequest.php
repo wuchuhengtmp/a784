@@ -19,7 +19,7 @@ class PostVideoRequest extends FormRequest
             ],
             'title' => 'required|string',
             'image' => 'required|image',
-            'video' => 'required|mimes:mp4'
+            'video' => 'required'
         ];
     }
 }

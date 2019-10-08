@@ -11,5 +11,10 @@
 
 - [协议和免责(不用token)](agreement.md) 
 
+- 发布
+    - [发布视频](video.md)
+    - [发布文章](article.md)
+    - [发布图片和视频文件](upload.md)
+
 
 

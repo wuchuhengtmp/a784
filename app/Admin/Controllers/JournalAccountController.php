@@ -29,6 +29,29 @@ class JournalAccountController extends AdminController
             $actions->disableEdit();
             $actions->disableView();
         });
+        $grid->filter(function($filter){
+            $filter->column(1/2, function($filter){
+                $filter->in('type', '类型')->checkbox([
+                    1 => '支出',
+                    2 => '收入',
+                    3 => '提现',
+                    4 => '充值',
+                ]);
+                $filter->in('status', '订单状态')->checkbox([
+                    0 => '未完成',
+                    1 => '完成',
+                ]);
+            });
+
+            $filter->column(1/2, function ($filter) {
+                $filter->between('created_at', '创建时间')->datetime();
+                $filter->in('transfer_type_id', '订单状态')->checkbox([
+                    1 => '龙币',
+                    3 => '支付宝',
+                ]);
+                $filter->between('money', '金额');
+            });
+        });
         $grid->disableCreateButton();
         $grid->column('id', 'ID');
         $grid->column('type', '类型')->display(function($type){
