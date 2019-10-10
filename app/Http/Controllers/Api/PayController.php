@@ -37,13 +37,6 @@ class PayController extends Controller
         'mode' => 'dev', // optional,设置此参数，将进入沙箱模式
     ];
 
-    /* public function __construct() */
-    /* { */
-    /*     $this->config['notfy_url']      = "http://a784admin.mxnt.net/api/natify"; */
-    /*     $this->config['ali_public_key'] = env('ALI_PUBLIC_KEY'); */
-    /*     $this->config['private_key']    = env('PRIVATE_KEY'); */
-        
-    /* } */
 
     public function index(PayRequest $Request)
     {
@@ -92,17 +85,34 @@ class PayController extends Controller
             {
                 $out_trade_no = $data['out_trade_no'];
                 $accountLog = AccountLogs::where(['out_trade_no' =>$out_trade_no ,'status' => 0])->first();
-                if (!empty($accountLog)) {
-                    $accountLog->status = 1;
-                    $accountLog->save();
+                $accountLog->status = 1;
+                $accountLog->save();
+                // 置顶充值
+                if (isset($data['is_topsearch'])) {
+                    // 生成置顶订单 
+                    $Member = Members::find($accountLog->member_id);
+                    $Posts  = Posts::find($data['post_id']);
+                    $Price = Configs::where('name', 'top_search_price')->first();
+                    TopSearchOrders::create([
+                        'post_id'        => $data['post_id'],
+                        'nickname'       => $Member->nickname,
+                        'title'          => $Posts->title,
+                        'member_id'      => $Member->id,
+                        'price'          => $Price->value . 's/元' ,
+                        'expense'        => $data['total_fee'],
+                        'top_time_limit' => $data['total_fee']* $Price->value,
+                        'top_end_time'   => date("Y-m-d H:i:s", time() + $data['total_fee'] * intval($Price->value)),
+                        'transfer_type'  => 3
+                    ]);
+                } else {
+                    // 账户充值
                     $accountLog->member->balance += $data['buyer_pay_amount'];
                     $is_save = $accountLog->member->save();
-                    
                 }
             }
-            Log::debug('Alipay notify', $data);
+            Log::debug('Alipay success', $data);
         } catch (\Exception $e) {
-            /* Log::debug('Alipay notify',$e->getMessage()); */
+            Log::debug('Alipay fail',$e->getMessage());
             // ;
         }
 
@@ -147,9 +157,34 @@ class PayController extends Controller
                 'notice'             => '热搜置顶',
                 'member_id'          => $Member->id,
                 'money'              => $Request->expense,
-                'transfer_type_id'   => 1
+                'transfer_type_id'   => 1,
+                'type'               => 1
             ]);
             return $this->responseSuccess();
+        }
+        // 支付宝支付
+        if ($Request->pay_type == 3) {
+            $out_trade_no = 'R'.date('YmdHis').mt_rand(100000,999999);
+            AccountLogs::create([
+                'status'    => 0,
+                'notice'             => '热搜置顶',
+                'member_id'          => $this->user()->id,
+                'money'              => $Request->expense,
+                'transfer_type_id'   => 3,
+                'type'               => 1
+            ]);
+            $order = [
+                'out_trade_no' => $out_trade_no,
+                'total_amount' => $Request->expense,
+                'subject' => '充值',
+                'is_topsearch' => true,
+                'post_id'      => $Posts->id
+            ];
+            //
+            $alipay = Pay::alipay($this->config)->app($order);
+            return $this->responseData([
+                'signture' => $alipay->getContent()
+            ]);
         }
     }
 }

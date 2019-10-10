@@ -89,7 +89,6 @@ class VideosController extends Controller
                $Post->member->avatar->url = env('APP_URL')  . '/'  . $url;
             }
         } else {
-            
                $Post->member->avatar->url = '';
         }
         $like_count = PostLikes::where('post_id', $id)->count();
@@ -180,7 +179,7 @@ class VideosController extends Controller
        try{
            $Post = $Post::create($data); 
            $Image = Images::create([
-               'url'=> $this->DNSupload($Request->file('image')->store('public')),
+               'url'=> $Request->image,
                'from'=> 2
            ]);
            $PostsImage = Db::table('post_image')->insert([

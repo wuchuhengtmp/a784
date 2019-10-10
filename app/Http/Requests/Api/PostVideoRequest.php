@@ -18,7 +18,7 @@ class PostVideoRequest extends FormRequest
                 'required', 'numeric'
             ],
             'title' => 'required|string',
-            'image' => 'required|image',
+            'image' => 'required',
             'video' => 'required'
         ];
     }

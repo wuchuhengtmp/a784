@@ -66,6 +66,8 @@ $api->version('v1', [
         $api->get('videos/comments/{id}', 'VideosController@Comments')->name('api.comments.show');
         // 当前登录用户信息
         $api->get('members/me', 'MembersController@me')->name('api.member.me');
+        // 七牛上传token
+        $api->get('qiniu/tokens', 'UploadController@qiniuToken');
         //上传文件
         $api->post('resource', 'ResourceController@store');
         //视频上传

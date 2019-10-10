@@ -95,7 +95,7 @@ class ArticlesController extends Controller
         $data['comment_count'] = Comments::where('pid', 0)->where('post_id', $Request->post_id)->count();
         $data['created_at']  = $Posts->created_at->toDateTimeString();
         $data['nickname']    = $Posts->member->nickname;
-        $data['avatar']      = $this->transferUrl($Posts->member->avatar->url);
+        $data['avatar']      = isset($Posts->member->avatar->url) ? $this->transferUrl($Posts->member->avatar->url) : '';
         $data['is_follow']   = in_array($Posts->member_id, $my_follow_ids);
         $data['is_like']     = in_array($Posts->id, $my_like_post_ids);
         $data['is_favorite'] = in_array($Posts->id, $my_favorie_ids);

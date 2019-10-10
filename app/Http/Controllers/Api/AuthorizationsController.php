@@ -90,7 +90,8 @@ class AuthorizationsController extends Controller
                     $Image = Images::create([
                         'url' =>  'http://cdn.hbbhsjz.cn/public/qZtrObTsSnlaN29nRt44cj3FP5NJNpHwasXkPMAe.jpeg'
                     ]); 
-                    $member = Members::create(['phone'=> $verifyData['phone'],
+                    $member = Members::create([
+                        'phone'=> $verifyData['phone'],
                         'nickname' => '手机用户_' . rand(1, 999),
                         'avatar_image_id' => $Image->id 
                     ]);  

@@ -75,7 +75,7 @@ class MembersController extends Controller
             ->with(['education'])
             ->withCount(['fans','commentLikes', 'follows'])
             ->first();
-        $Member->avatar_url = $this->transferUrl($Member->avatar->url);
+        $Member->avatar_url = $Member->avatar->url ? $this->transferUrl($Member->avatar->url) : '';
         $hasLevel = Members::getlevelInfoByMemberId($this->user()->id);
         $Member->level = $hasLevel ? $hasLevel->name : null;
         $Member->education_level  = $Member->education->name ?? null;
