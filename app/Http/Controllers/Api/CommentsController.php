@@ -159,6 +159,7 @@ class CommentsController extends Controller
         if (!$hasComment) return $this->responseError('没有这个评论');
         $Replies = Comments::where('path', 'like', "0-" . $Request->comment_id . "%")
             ->select(DB::raw( "CONCAT(comments.path, '-',  comments.id) AS order_weight, comments.*"))
+            ->where('post_id', $hasComment->post_id) 
             ->paginate($limit);
         if(!$Replies->isEmpty()) {
             foreach($Replies as $k => $v) {
