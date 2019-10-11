@@ -25,7 +25,8 @@ class Posts extends Model
         'tag_id',
         'content_type',
         'content',
-        'member_id'
+        'member_id',
+        'sponsor_at',
     ]; 
     protected $dates = ['deleted_at'];
 
@@ -142,6 +143,22 @@ class Posts extends Model
         if (!$hasData) return false;
         $post_ids = array_column($hasData->toArray(), 'post_id');
         return in_array($post_id, array_column($hasData->toArray(), 'post_id'));
+    }
+
+    /**
+     * 热搜期限
+     * 
+     * @post_id 资源id
+     * @time_len 时长(s/秒)
+     * return void
+     */
+    public static function sponsor($post_id, $time_len)
+    {
+        $Post = self::find($post_id);
+        $base_time = strtotime($Post->sponsor_at) < time() ?  time() : strtotime($Post->sponsor_at);
+        $time = $base_time +  $time_len;
+        $Post->sponsor_at = date('Y-m-d H:i:s', $time);
+        $Post->save();
     }
 }
 

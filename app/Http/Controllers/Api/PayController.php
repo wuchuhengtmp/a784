@@ -87,33 +87,22 @@ class PayController extends Controller
                 $accountLog = AccountLogs::where(['out_trade_no' =>$out_trade_no ,'status' => 0])->first();
                 $accountLog->status = 1;
                 $accountLog->save();
-                $has_topsearch = TopSearchOrders::find($accountLog->id);
+                $has_topsearch = TopSearchOrders::where('account_log_id', $accountLog->id)->first();
                 // 置顶充值
                 if ($has_topsearch) {
-                    // 生成置顶订单 
-                    $Member = Members::find($accountLog->member_id);
-                    $Posts  = Posts::find($has_topsearch['post_id']);
-                    $Price = Configs::where('name', 'top_search_price')->first();
-                    TopSearchOrders::create([
-                        'post_id'        => $has_topsearch['post_id'],
-                        'nickname'       => $Member->nickname,
-                        'title'          => $Posts->title,
-                        'member_id'      => $Member->id,
-                        'price'          => $Price->value . 's/元' ,
-                        'expense'        => $data['buyer_pay_amount'],
-                        'top_time_limit' => $data['buyer_pay_amount']* $Price->value,
-                        'top_end_time'   => date("Y-m-d H:i:s", time() + $data['buyer_pay_amount'] * intval($Price->value)),
-                        'transfer_type'  => 3
-                    ]);
+                    $has_topsearch->is_pay = 1;
+                    $has_topsearch->save();
+                    Posts::sponsor($has_topsearch->post_id, $has_topsearch->top_time_limit);
                 } else {
                     // 账户充值
                     $accountLog->member->balance += $data['buyer_pay_amount'];
                     $is_save = $accountLog->member->save();
                 }
+            } else {
             }
-            Log::debug('Alipay success', $data);
+            /* Log::debug('Alipay success', $data); */
         } catch (\Exception $e) {
-            Log::debug('Alipay fail',[$e->getMessage()]);
+            /* Log::debug('Alipay fail',[$e->getMessage()]); */
         }
 
         return $alipay->success();
@@ -133,9 +122,9 @@ class PayController extends Controller
             ->where('content_type', 1)
             ->first();
         if(!$Posts) return $this->responseError('没有这个视频');
+        $Member = Members::find($this->user()->id);
         // 龙币支付 
         if ($Request->pay_type == 1) {
-            $Member = Members::find($this->user()->id);
             if ($Member->balance < $Request->expense) return  $this->responseError('余额不足额');
             $Member->balance -= $Request->expense;
             $Member->save();
@@ -149,7 +138,7 @@ class PayController extends Controller
                 'transfer_type_id'   => 1,
                 'type'               => 1
             ]);
-            TopSearchOrders::create([
+            $topsearch = TopSearchOrders::create([
                 'post_id'        => $Request->post_id,
                 'nickname'       => $Member->nickname,
                 'title'          => $Posts->title,
@@ -162,26 +151,44 @@ class PayController extends Controller
                 'account_log_id' => $AccountLog->id,
 
             ]);
+            // 加热搜时长
+            Posts::sponsor($Request->post_id, $topsearch->top_time_limit);
             return $this->responseSuccess();
         }
         // 支付宝支付
         if ($Request->pay_type == 3) {
             $out_trade_no = 'R'.date('YmdHis').mt_rand(100000,999999);
-            AccountLogs::create([
+            $accountLog = AccountLogs::create([
+                'type'      => 1,
+                'out_trade_no'      => $out_trade_no,
+                'money'     => $Request->expense,
                 'status'    => 0,
-                'notice'             => '热搜置顶',
-                'member_id'          => $this->user()->id,
-                'money'              => $Request->expense,
-                'transfer_type_id'   => 3,
-                'type'               => 1
+                'transfer_type_id' => 3,
+                'member_id' => $this->user()->id,
+                'notice'    => '热搜置顶',
             ]);
+            // 生成置顶订单 
+            $Price = Configs::where('name', 'top_search_price')->first();
+            TopSearchOrders::create([
+                'post_id'        => $Posts->id,
+                'nickname'       => $Member->nickname,
+                'title'          => $Posts->title,
+                'member_id'      => $Member->id,
+                'price'          => $Price->value . 's/元' ,
+                'expense'        => $Request->expense,
+                'top_time_limit' => $Request->expense * $Price->value,
+                'top_end_time'   => date("Y-m-d H:i:s", time() + $Request->expense  * intval($Price->value)),
+                'transfer_type'  => 3,
+                'is_pay'         => 0,
+                'account_log_id' => $accountLog->id
+            ]);
+
             $order = [
                 'out_trade_no' => $out_trade_no,
                 'total_amount' => $Request->expense,
-                'subject' => '热搜置顶',
-                'is_topsearch' => true,
-                'post_id'      => $Posts->id
+                'subject' => '热搜置顶'
             ];
+
             //
             $alipay = Pay::alipay($this->config)->app($order);
             return $this->responseData([

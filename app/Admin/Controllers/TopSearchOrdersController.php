@@ -33,6 +33,19 @@ class TopSearchOrdersController extends AdminController
         $grid->column('expense', __('费用'));
         $grid->column('top_time_limit', __('置顶时长'));
         $grid->column('top_end_time', __('置顶时限'));
+        $grid->column('is_pay', __('支付状态'))
+            ->display(function($type_id){
+            if ($type_id == 0) 
+                return '未支付';
+            if ($type_id == 1 )
+                return '已支付 ';
+                /* return $this->transferType->name; */ 
+            })
+            ->label([
+            1 => 'default',
+            2 => 'warning',
+            3 => 'success',
+            ]);
         $grid->column('transfer_type', __('付款方式'))
             ->display(function($type_id){
             if ($type_id == 1) 

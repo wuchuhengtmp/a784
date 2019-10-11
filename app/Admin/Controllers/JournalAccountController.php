@@ -25,6 +25,7 @@ class JournalAccountController extends AdminController
     protected function grid()
     {
         $grid = new Grid(new AccountLogs);
+        $grid->model()->orderBy('id', 'desc');
         $grid->actions(function ($actions) {
             $actions->disableEdit();
             $actions->disableView();
