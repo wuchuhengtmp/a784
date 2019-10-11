@@ -25,7 +25,7 @@ class PayController extends Controller
         'private_key' =>'MIIEpAIBAAKCAQEA35VNqYnXAy43AgXpyOrz/EkuNBaO4oRpdtRa1sX/O7k6QhM15nt1rwbQefZ59D7g53yksMsN6hmnoBGBgXfhkpNOMENQMarZTY3ZEG2rx9wx07KasQQ6LvQgxjqZj/KM9f7XPx19z1XZp9E0VsMAyWUXZLcoKxOdDPf0P8JSt8160ccZg/kRn44o1Lw8wp5/KdbrQN+4xkokFioZ21t04z8pF8+A68rKqfWwuFRPjDeNdSE4YHZX+NOhI9707jYRRTagyHPsGlx1WedSYjDT1k2Ra5OXNDKhpv3bXsy3MSzKpSV0+jdrOKrzGdlaTEOzZ+Hr0I1U1eBK76tyYwRLDwIDAQABAoIBAQDG70mSuBqfsdcv7aL+Kk+9AkAiCJBJ7BcKrBfHUZSvxzeW4xDqap9jhGSqoCwSrn/eeIDw7TsMOJd1TR413DzQ9lBzkPEhwCppXvTsMSjPQ5TyD9CkAGbksEMZHbrU4bOajY1nkw4GFRT8xKAVMpzYlSIjcvRCn8j1aQniUTzYXEpH/ZEfZnnXUAM3d/tBY3Qr0B3usuv2obV6r75/p4n27mGTbTO015MDxjiPoDP4t9Yf1Om8Qe1j7b2W5jEouf/qRlDEekwTMh1q/jOk9mQseEwQGtCKXe176wneY/Y09sOJYevfCUmrpunereWXCSssmGtZl1ZKWJ6MkcUD8dABAoGBAPMIbOQ0YguM2dK18uKtdH8uB4k6qi3fO2PFkS0iIRZnuVO8nWbBxD1MyGS1wkPJgim6h/doLR1kRJNet76IuRRJEI6ZvVaW2hWFpQu2ugf/fK79FDrbf2+LQcipyVKSmHXZxdA2kVcOq31aVhJ7vvvK+9/N9pMpb7uxr3UFVd4PAoGBAOuDNy/zXORvu6FsQBXe8TglYAFXFwumnrsh9+NHTYDNh59U4RS2HEsBQj7QV/B3mizw4g24+y6LBvOeksEGgY0av0rbLlh701yTVrAFJ7uithWjC0gYA1ftDlZPPaymP8qyReBlbjKOuTpeTDn9erKrq0D/32xbNWlAyusK58MBAoGAb/GCjr7eJmnTb24lmWnCDk66Y+hkuMppRbScAUkGKpbOU5a+fbVk2cODTng2KhkoXmYv+LLAjRhBSgxH4HiDn6dj+/surjK/80fi1PluyP5ShRvHdLDkCxH+1Bn4xJMHrMkJh7WKzqnQLeYtXUgomTxPNjBdkj103OSkZ+d0PNsCgYEAmmXyxz/f1W8e7kv+k5gOQkXWc+p5lEzO4VX6ooj7WYbk8+L8kMx3LgEMQgvqqx5t+CqPuHleSvwgOZTrFxrB0hUH9fZNovrC7X02pr0qeEvK3dJ/Met0Pa+O56yZfVecmLFZOCynGwQQkSCDDr2MNBhxdHKLMgl1saQlpAQJPwECgYB67vTz9K1IP140RBPDgJTllC9hCMyF448EBSndAoqneWUBz8IwyOk3oZVkhJmE6VMzpohNWp3KvSJRtWPkYNiOff1oOA5JU0MWM5J3cfeDO/QRIgqnzS5lsntJm5o9Np8gJtMfYFGZOGttLMXbj2qveWyqTsyu/MFzNROnLjqyqg==',
         'log' => [ // optional
             'file' => './logs/alipay.log',
-            'level' => 'info', // 建议生产环境等级调整为 info，开发环境为 debug
+            'level' => 'debug', // 建议生产环境等级调整为 info，开发环境为 debug
             'type' => 'single', // optional, 可选 daily.
             'max_file' => 30, // optional, 当 type 为 daily 时有效，默认 30 天
         ],
@@ -87,21 +87,22 @@ class PayController extends Controller
                 $accountLog = AccountLogs::where(['out_trade_no' =>$out_trade_no ,'status' => 0])->first();
                 $accountLog->status = 1;
                 $accountLog->save();
+                $has_topsearch = TopSearchOrders::find($accountLog->id);
                 // 置顶充值
-                if (isset($data['is_topsearch'])) {
+                if ($has_topsearch) {
                     // 生成置顶订单 
                     $Member = Members::find($accountLog->member_id);
-                    $Posts  = Posts::find($data['post_id']);
+                    $Posts  = Posts::find($has_topsearch['post_id']);
                     $Price = Configs::where('name', 'top_search_price')->first();
                     TopSearchOrders::create([
-                        'post_id'        => $data['post_id'],
+                        'post_id'        => $has_topsearch['post_id'],
                         'nickname'       => $Member->nickname,
                         'title'          => $Posts->title,
                         'member_id'      => $Member->id,
                         'price'          => $Price->value . 's/元' ,
-                        'expense'        => $data['total_fee'],
-                        'top_time_limit' => $data['total_fee']* $Price->value,
-                        'top_end_time'   => date("Y-m-d H:i:s", time() + $data['total_fee'] * intval($Price->value)),
+                        'expense'        => $data['buyer_pay_amount'],
+                        'top_time_limit' => $data['buyer_pay_amount']* $Price->value,
+                        'top_end_time'   => date("Y-m-d H:i:s", time() + $data['buyer_pay_amount'] * intval($Price->value)),
                         'transfer_type'  => 3
                     ]);
                 } else {
@@ -112,8 +113,7 @@ class PayController extends Controller
             }
             Log::debug('Alipay success', $data);
         } catch (\Exception $e) {
-            Log::debug('Alipay fail',$e->getMessage());
-            // ;
+            Log::debug('Alipay fail',[$e->getMessage()]);
         }
 
         return $alipay->success();
@@ -140,6 +140,15 @@ class PayController extends Controller
             $Member->balance -= $Request->expense;
             $Member->save();
             $Price = Configs::where('name', 'top_search_price')->first();
+            // 记帐
+            $AccountLog =  AccountLogs::create([
+                'status'    => 1,
+                'notice'             => '热搜置顶',
+                'member_id'          => $Member->id,
+                'money'              => $Request->expense,
+                'transfer_type_id'   => 1,
+                'type'               => 1
+            ]);
             TopSearchOrders::create([
                 'post_id'        => $Request->post_id,
                 'nickname'       => $Member->nickname,
@@ -149,16 +158,9 @@ class PayController extends Controller
                 'expense'        => $Request->expense,
                 'top_time_limit' => $Request->expense * $Price->value,
                 'top_end_time'   => date("Y-m-d H:i:s", time() + $Request->expense * intval($Price->value)),
-                'transfer_type'  => 1
-            ]);
-            // 记帐
-            AccountLogs::create([
-                'status'    => 1,
-                'notice'             => '热搜置顶',
-                'member_id'          => $Member->id,
-                'money'              => $Request->expense,
-                'transfer_type_id'   => 1,
-                'type'               => 1
+                'transfer_type'  => 1,
+                'account_log_id' => $AccountLog->id,
+
             ]);
             return $this->responseSuccess();
         }
@@ -176,7 +178,7 @@ class PayController extends Controller
             $order = [
                 'out_trade_no' => $out_trade_no,
                 'total_amount' => $Request->expense,
-                'subject' => '充值',
+                'subject' => '热搜置顶',
                 'is_topsearch' => true,
                 'post_id'      => $Posts->id
             ];

@@ -441,6 +441,7 @@ class AnswersController extends Controller
         $tmp_answer_comments = [];
         $limit = $Request->comment_limit ?? 1; 
         $Comm =  AnswerComments::find($Request->answer_id);
+        if (!$Comm) return $this->responseError('没有这个评论, 请检查参数是否正确');
             $hasReplies = AnswerComments::where('path', 'like', '0-' . $Comm->id. '%')
                 ->select(
                     DB::raw("CONCAT(path, '-', id) AS order_weight,answer_comments.*")
@@ -448,7 +449,7 @@ class AnswersController extends Controller
                 ->orderBy('order_weight')
                 ->paginate($limit);
             if (!$hasReplies->isEmpty()) {
-                $el = Answers::find($Request->answer_id);
+                $el = Answers::find($Comm->answer_id);
                 $Post = Posts::find($el->post_id);
                 $tmp_answer_comments['count'] = $hasReplies->total();
                 foreach($hasReplies as $k=>$reply){

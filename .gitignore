@@ -23,4 +23,5 @@ tag
 /public/phpredisadmin/.*
 /public/phpredisadmin/*
 test.php
+/public/logs/alipay.log
 

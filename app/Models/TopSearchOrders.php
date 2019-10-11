@@ -16,7 +16,8 @@ class TopSearchOrders extends Model
         'expense',
         'top_time_limit',
         'top_end_time',
-        'transfer_type'  
+        'transfer_type'  ,
+        'account_log_id'
     ];
 
      
