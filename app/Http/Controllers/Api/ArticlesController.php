@@ -37,7 +37,7 @@ class ArticlesController extends Controller
             'member_id'    => $this->user()->id,
         ]);
         // 单图保存
-        if(!$Request->file('image3') )  {
+        if(!$Request->image3 )  {
             $Image = Images::create([
                 'url'  => $Request->image1,
                 'from' => 2
@@ -46,18 +46,17 @@ class ArticlesController extends Controller
                'post_id'  => $Post->id,
                'image_id' => $Image->id
            ]);
-        }
-        //3图保存
-        if($Request->file('image1') && $Request->file('image3'))  {
+        } else if($Request->image1 )  {
             for($i=1; $i<=3; $i++) {
                 $Image = Images::create([
-                    'url'  => $Request->image . $i,
+                    'url'  => $Request->input('image' . $i),
                         'from' => 2
                     ]);
                 $PostsImage = Db::table('post_image')->insert([
                     'post_id'  => $Post->id,
                     'image_id' => $Image->id
                 ]);
+                
             }
         }
            DB::commit();

@@ -241,7 +241,12 @@ $api->version('v1', [
         // 回复
         $api->get('v2/answercomments/{answer_id}/replies', 'AnswersController@repliesshow')
             ->where(['question_id' => '[0-9]+']) ;
+        //  提现和充值记录
         $api->get('accountLogs', 'AccountLogsController@index');
+        // 提现申请
+        $api->post('withdraw', 'AccountLogsController@withdrawStore');
+        // 获取评论的回复
+
     }); 
     // 支付宝回调请求 
     $api->post('pays/alipay/natify', 'PayController@notify');

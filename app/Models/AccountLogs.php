@@ -17,7 +17,9 @@ class AccountLogs extends Model
         'transfer_type_id',
         'status',
         'maney',
-        'out_trade_no'
+        'out_trade_no',
+        'account_name',
+        'withdraw_account'
     ];
 
 
