@@ -105,4 +105,12 @@ class Comments extends Model
         return $this->hasMany(CommentLikes, 'comment_id', 'id');
     }
 
+    /**
+     *  点赞量
+     *
+     */ 
+    public static function countLike($comment_id)
+    {
+        return CommentLikes::where('comment_id', $comment_id)->count();
+    }
 }

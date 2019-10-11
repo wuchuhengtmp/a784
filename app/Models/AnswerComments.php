@@ -58,4 +58,13 @@ class AnswerComments extends Model
             'post_id'
         );
     }
+
+    /**
+     * 关联 答案 
+     *
+     */
+    public function answer()
+    {
+        return $this->hasOne(Answers::class, 'id', 'answer_id');
+    }
 }

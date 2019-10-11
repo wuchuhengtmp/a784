@@ -19,7 +19,6 @@ class WebsocketTest {
         ]);
 
         $this->server->on('open', function (swoole_websocket_server $server, $request) {
-
         });
 
         $this->server->on('message', function (Swoole\WebSocket\Server $server, $frame) {

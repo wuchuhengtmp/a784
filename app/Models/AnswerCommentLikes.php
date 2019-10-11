@@ -53,4 +53,13 @@ class AnswerCommentLikes extends Model
         return $my_comment_like_ids;
     }
 
+    /**
+     * 关联评论
+     *
+     */
+    public function answerComment()
+    {
+        return $this->hasOne(AnswerComments::class, 'id', 'answer_comment_id');
+    }
+
 }

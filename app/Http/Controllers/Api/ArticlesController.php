@@ -91,7 +91,7 @@ class ArticlesController extends Controller
         $data['member_id']   = $Posts->member_id;
         $data['title']       = $Posts->title;
         $data['content']     = $Posts -> content;
-        $data['comment_count'] = Comments::where('pid', 0)->where('post_id', $Request->post_id)->count();
+        $data['comment_count'] = Comments::where('post_id', $Request->post_id)->count();
         $data['created_at']  = $Posts->created_at->toDateTimeString();
         $data['nickname']    = $Posts->member->nickname;
         $data['avatar']      = isset($Posts->member->avatar->url) ? $this->transferUrl($Posts->member->avatar->url) : '';

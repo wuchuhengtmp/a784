@@ -167,10 +167,10 @@ class Messages extends BaseModel
     public static function insertByAnswerCommentLikeId(int $answer_comment_like_id)
     {
         $answerCommentLike = AnswerCommentLikes::find($answer_comment_like_id);
-        $Post = $answerCommentLike->answer->post;
+        $answerComment = $answerCommentLike->answerComment;
         $data['member_id']              = $answerCommentLike->member_id;
         $data['answer_comment_like_id'] = $answerCommentLike->id;
-        $data['be_like_member_id']      = $Post->member->id;
+        $data['be_like_member_id']      = $answerComment->member_id;
         $data['content']                = $answerCommentLike->member->nickname . "点赞你的答案评论" ;
         $data['type']                   = 1;
         $data['post_id']                = $answerCommentLike->answer->post->id;
@@ -196,7 +196,7 @@ class Messages extends BaseModel
         $memberFollow              = MemberFollow::find($member_follow_id);
         $data['member_id']         = $memberFollow->member_id;
         $data['be_like_member_id'] = $memberFollow->follow_member_id;
-        $data['content']           = "关注了你";
+        $data['content']           = $memberFollow->member->nickname . "关注了你";
         $data['type']              = 2;
         $data['member_follow_id']  = $memberFollow->id;
         self::create($data);
@@ -234,6 +234,24 @@ class Messages extends BaseModel
 
 
     /**
+     * 点评答案消息
+     * 
+     * @return void
+     */
+    public static function insertByAnswerCommentId($comment_id)
+    {
+        $Comment = AnswerComments::find($comment_id);
+        $data['answer_comment_id']   = $Comment->id;
+        $data['member_id']         = $Comment->member_id;
+        $data['be_like_member_id'] = $Comment->answer->member_id;
+        $data['content']  = $Comment->member->nickname . "点评你的答案";
+        $data['post_id']      = $Comment->answer->post_id;
+        $data['content_type'] = $Comment->answer->post->content_type;
+        $data['type'] = 3;
+        self::create($data);
+    }
+
+    /**
     * 资源回复消息
     *
     * @return void
@@ -243,7 +261,7 @@ class Messages extends BaseModel
         $Comment = Comments::find($comment_id);
         $data['post_comment_id']   = $Comment->id;
         $data['member_id']         = $Comment->member_id;
-        $data['be_like_member_id'] = Comments::find($Comment->pid)->id;
+        $data['be_like_member_id'] = Comments::find($Comment->pid)->member_id;
         $data['content']           = $Comment->content;
         $data['type']              = 4;
         $data['post_id']           = $Comment->post->id;

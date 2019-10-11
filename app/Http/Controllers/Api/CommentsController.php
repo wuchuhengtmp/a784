@@ -170,7 +170,7 @@ class CommentsController extends Controller
                 $tmp['member_id']   = $v->member_id;
                 $tmp['avatar']      = $v->member->avatar->url;
                 $tmp['level']       = Members::getLevelNameByMemberId($v->member_id);
-                $tmp['likes_count'] = $v->likes_count;
+                $tmp['likes_count'] = Comments::countLike($v->id);
                 $tmp['is_like']     = CommentLikes::isLike($v->id, $this->user()->id);
                 $tmp['nickname']    = $v->member->nickname;
                 $tmp['PTOC'] = $k === 0 ? $v->member->nickname. ' 回复 ' . $hasComment->member->nickname: $v->member->nickname. ' 回复 ' . $Replies[--$k]->member->nickname;

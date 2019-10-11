@@ -29,10 +29,12 @@ class AnswerCommentsController extends Controller
             'pid'       => 0,
             'path'      => 0
         ]); 
-        if ($hasSave)
+        if ($hasSave) {
+            Messages::insertByAnswerCommentId($hasSave->id);
             return $this->responseSuccess();
-        else 
+        } else {
             return $this->responseError();
+        }
     }
 
     /**

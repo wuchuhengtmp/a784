@@ -162,8 +162,7 @@ class LikesController extends Controller
         $be_like = AnswerCommentLikes::where('member_id', $this->user()->id)
             ->where('answer_comment_id', $Request->comment_id)
             ->first();
-        if ($be_like) 
-            return $this->responseError('您已经点赞过了');
+        if ($be_like) return $this->responseError('您已经点赞过了');
         $hasCreate = AnswerCommentLikes::create([
             'answer_comment_id'  => $Request->comment_id,
             'member_id'  => $this->user()->id
@@ -186,7 +185,6 @@ class LikesController extends Controller
             ->first();
         if ($hasData){
             $hasData->delete();
-            /* Messages::deleteByAnswerCommentLikeId($hasData->id); */
         }
         return $this->responseSuccess();
     }
