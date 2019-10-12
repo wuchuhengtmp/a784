@@ -33,29 +33,6 @@ class withDrawController extends AdminController
             $actions->disableEdit();
             $actions->disableView();
         });
-        $grid->filter(function($filter){
-            $filter->column(1/2, function($filter){
-                $filter->in('type', '类型')->checkbox([
-                    1 => '支出',
-                    2 => '收入',
-                    3 => '提现',
-                    4 => '充值',
-                ]);
-                $filter->in('status', '订单状态')->checkbox([
-                    0 => '未完成',
-                    1 => '完成',
-                ]);
-            });
-
-            $filter->column(1/2, function ($filter) {
-                $filter->between('created_at', '创建时间')->datetime();
-                $filter->in('transfer_type_id', '订单状态')->checkbox([
-                    1 => '龙币',
-                    3 => '支付宝',
-                ]);
-                $filter->between('money', '金额');
-            });
-        });
         $grid->disableCreateButton();
         $grid->column('id', 'ID');
         $grid->column('type', '类型')->display(function($type){
@@ -155,6 +132,12 @@ class withDrawController extends AdminController
         $form->number('type', __('Type'));
         $form->text('out_trade_no', __('Out trade no'));
         $form->text('trade_no', __('Trade no'));
+
+        $states = [
+            'on'  => ['value' => 1, 'text' => '完成', 'color' => 'primary'],
+            'off' => ['value' => 0, 'text' => '未完成', 'color' => 'default'],
+        ];
+        $form->switch('status');
         $form->text('withdraw_account', __('Withdraw account'));
         $form->text('account_name', __('Account name'));
 
