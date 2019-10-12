@@ -391,6 +391,16 @@ class Messages extends BaseModel
                 $data_format['comments']        = Messages::getData($message->be_like_member_id, 3);
                 $data_format['replies']         = Messages::getData($message->be_like_member_id, 4);
                 $data_format['system_messages'] = Messages::getSystemMessage($message->be_like_member_id);
+                $like_count                  = $data_format['likes']['count'] ?? 0;
+                $follows_count               = $data_format['follows']['count'] ?? 0;
+                $comments_count              = $data_format['comments']['count'] ?? 0;
+                $replies_count               = $data_format['replies']['count'] ?? 0;
+                $system_messages_count       = $data_format['system_messages']['count'] ?? 0;
+                $data_format['noread_count'] = intval($like_count)
+                    + intval($comments_count) 
+                    + intval($replies_count) 
+                    + intval($system_messages_count) 
+                    + intval($follows_count);
                 Messages::sendMessage([
                     'member_id'  => $message->be_like_member_id,
                     'data'       => json_encode($data_format)
