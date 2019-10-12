@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Overtrue\EasySms\EasySms;
 use App\Http\Requests\Api\VerificationCodeRequest;
 use App\Http\Requests\Api\VerificationMemberPhoneRequest;
+use Illuminate\Support\Facades\Log;
 
 class VerificationCodesController extends Controller
 {

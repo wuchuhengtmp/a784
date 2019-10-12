@@ -25,7 +25,7 @@ class DiysmsGateway extends Gateway
 {
     use HasHttpRequest;
 
-    const ENDPOINT_URL = 'http://119.29.200.194:6687/sms.aspx';
+    const ENDPOINT_URL = 'http://119.29.200.194:6687/sms.aspx?action=send';
 
     const RESOK = 'Success';
     const MSGOK = 'ok';
