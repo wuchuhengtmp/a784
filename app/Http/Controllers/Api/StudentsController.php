@@ -28,29 +28,38 @@ class StudentsController extends Controller
             $stage = (new Posts());
         }
         $Posts= $stage->where('members.job', 1)
+            ->select(
+                DB::raw("CONCAT(posts.sponsor_at, '-', posts.all_likes, '-', posts.created_at) AS order_weight,
+                posts.*
+                ")
+                ) 
             ->whereIn('posts.content_type', [1,2])
             ->whereNull('posts.deleted_at')
             ->with(['images'])
             ->withCount(['comments'])
             ->join('members', 'members.id', '=', 'posts.member_id')
-            ->orderBy('posts.created_at', 'desc') 
+            ->orderBy('order_weight', 'desc') 
             ->paginate(18);
         if ($Posts) {
             $data = [];
             foreach($Posts as $el) {
-                $tmp['id'] = $el->id;
-                $tmp['title'] = $el->title;
-                $tmp['nickname'] = $el->nickname;
-                $tmp['content_type'] = $el->content_type;
-                $tmp['created_at'] = $el->created_at->toDateTimeString();
-                $tmp['tag_id']  = $el->tag_id;
-                $tmp['avatar']  = $el->member->avatar->url ?? '';
-                $tmp['comments_count'] = $el->comments_count ;
-                $tmp['images']         = array_map(function($image) {
+                $tmp = [];
+                $tmp['id']              = $el->id;
+                $tmp['title']           = $el->title;
+                $tmp['nickname']        = $el->nickname;
+                $tmp['content_type']    = $el->content_type;
+                $tmp['created_at']      = $el->created_at->toDateTimeString();
+                $tmp['tag_id']          = $el->tag_id;
+                $tmp['avatar']          = $el->member->avatar->url ??  '';
+                $tmp['comments_count']  = $el->comments_count ;
+                $tmp['images']          = array_map(function($image) {
                     return $this->transferUrl($image['url']);
                 }, $el->images->toArray());
-                if ($el->content_type == 1) $tmp['video_url'] = $el->video_url;
-                $data[]  = $tmp;
+                if ($el->content_type  == 1) {
+                    $tmp['video_url'] = $el->video_url;
+                    $tmp['duration'] = $el->duration;
+                }
+                $data[] = $tmp;
             }
             $result['data'] = $data;
             $result['count']  = $Posts->total();
