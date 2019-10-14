@@ -119,9 +119,8 @@ class PayController extends Controller
             'expense'  => 'required|gt:0'
         ]); 
         $Posts = Posts::where('id', $Request->post_id)
-            ->where('content_type', 1)
             ->first();
-        if(!$Posts) return $this->responseError('没有这个视频');
+        if(!$Posts) return $this->responseError('没有这个资源');
         $Member = Members::find($this->user()->id);
         // 龙币支付 
         if ($Request->pay_type == 1) {
