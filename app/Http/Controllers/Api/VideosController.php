@@ -37,7 +37,8 @@ class VideosController extends Controller
                     images.url,
                     (SELECT COUNT(*) FROM favorites WHERE favorites.post_id = posts.id ) AS favories_count,
                     posts.clicks,
-                    posts.title
+                    posts.title,
+                    posts.duration
                 ")
                 ) 
             ->whereNull('posts.deleted_at')
@@ -175,6 +176,10 @@ class VideosController extends Controller
        $data['tag_id']       = $Request->tag_id;
        $data['content_type'] = 1;
        $data['member_id']    = $this->user()->id;
+       //获取时长
+       $videoInfo = json_decode(file_get_contents($Request->video . '?avinfo'), true);
+       $day_timestamp = strtotime(date('Y-m-d', time()));
+       $data['duration'] = date('H:i:s', $day_timestamp + intval($videoInfo['streams'][0]['duration'])); 
        DB::beginTransaction();
        try{
            $Post = $Post::create($data); 

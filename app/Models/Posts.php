@@ -27,6 +27,7 @@ class Posts extends Model
         'content',
         'member_id',
         'sponsor_at',
+        'duration',
     ]; 
     protected $dates = ['deleted_at'];
 
