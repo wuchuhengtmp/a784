@@ -179,7 +179,7 @@ class VideosController extends Controller
        //获取时长
        $videoInfo = json_decode(file_get_contents($Request->video . '?avinfo'), true);
        $day_timestamp = strtotime(date('Y-m-d', time()));
-       $data['duration'] = date('H:i:s', $day_timestamp + intval($videoInfo['streams'][0]['duration'])); 
+       $data['duration'] = date('i:s', $day_timestamp + intval($videoInfo['streams'][0]['duration'])); 
        DB::beginTransaction();
        try{
            $Post = $Post::create($data); 
