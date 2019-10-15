@@ -10,7 +10,8 @@ use App\Models\{
     MemberFollow,
     Posts,
     Messages,
-    Comments
+    Comments,
+    Favorites
 };
 
 class FollowsController extends Controller
@@ -199,6 +200,7 @@ class FollowsController extends Controller
                 $tmp['content_type']   = $el->content_type;
                 $tmp['comments_count'] = $el->comments_count;
                 $tmp['likes_count']    = $el->likes_count;
+                $tmp['is_favorite']    = Favorites::isFavorite($el->member_id, $el->id);
                 $tmp['Images']  = []; 
                 $tmp['is_like']      = Posts::isLike($this->user()->id, $el->member_id);
                 foreach($el->Images as $images_el) {

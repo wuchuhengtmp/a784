@@ -15,7 +15,7 @@ class Favorites extends Model
     ];
     
     /**
-     *  是否已经关注
+     *  是否已经收藏
      *  
      *  @member_id  用户id 
      *  @post_id    资源id
@@ -26,7 +26,7 @@ class Favorites extends Model
         $has_data = self::where('post_id', $post_id)
             ->where('member_id', $member_id)
             ->first('id');
-        return $has_data ? true : false; 
+        return !$has_data ? true : false; 
     }
 
 
