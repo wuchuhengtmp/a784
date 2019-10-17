@@ -41,6 +41,34 @@ class CheckToken
             ]);
 
         }
-        return $next($request);
+        $response =  $next($request);
+        if ($response->content()) {
+            $json = preg_replace_callback(
+                '|\d{4}-\d{1,2}-\d{1,2}\s\d{1,2}:\d{1,2}:\d{1,2}|',
+                function ($time_str) {
+                    $timestamp = strtotime($time_str[0]);
+                    $result = '';
+                    if (($timestamp + 60 ) > time()) {
+                        $result = time() - $timestamp  . '秒';
+                    } else if(($timestamp + 60 * 60) > time()){
+                        $time_len = intval((time() - $timestamp) /60);
+                        $result = $time_len . '分钟';
+                    } else if (($timestamp + 60 * 60 * 24 ) > time()) {
+                        $time_len = intval((time() - $timestamp) / (60 * 60));
+                        $result = $time_len . '小时';
+                    } else if(($timestamp + 60 * 60 * 24 * 31) > time()) {
+                        $time_len = intval((time() - $timestamp) / (60 * 60 * 24));
+                        $result = $time_len . '天';
+                    } else if (($timestamp + 60 * 60 * 24 * 365) > time()) {
+                        $time_len = (time() - $timestamp ) / (60 * 60 * 24 * 31);
+                        $result = $time_len . '月';
+                    }
+                    return $result . '前';
+                },
+                    $response->content()
+                );
+            $response->original = json_decode($json, true);
+        }
+        return $response;
     }
 }
