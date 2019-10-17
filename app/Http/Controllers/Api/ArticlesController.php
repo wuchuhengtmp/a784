@@ -150,6 +150,7 @@ class ArticlesController extends Controller
             foreach($Posts as $el) {
                 $tmp['id'] = $el->id;
                 $tmp['title'] = $el->title;
+                $tmp['nickname'] = isset($el->member->nickname) ? $el->member->nickname : '';
                 $tmp['created_at'] = $el->created_at->toDateTimeString();
                 $tmp['images'] = array_map(function($el){
                     return $this->transferUrl($el['url']);
@@ -184,6 +185,7 @@ class ArticlesController extends Controller
             foreach($Posts as $el) {
                 $tmp['id'] = $el->id;
                 $tmp['title'] = $el->title;
+                $tmp['nickname'] = isset($el->member->nickname) ? $el->member->nickname : '';
                 $tmp['created_at'] = $el->created_at->toDateTimeString();
                 $tmp['images'] = array_map(function($el){
                     return $this->transferUrl($el['url']);

@@ -44,7 +44,7 @@ class TeachersController extends Controller
                 $tmp = [];
                 $tmp['id']              = $el->id;
                 $tmp['title']           = $el->title;
-                $tmp['nickname']        = $el->nickname;
+                $tmp['nickname']        = $el->member->nickname?? '';
                 $tmp['content_type']    = $el->content_type;
                 $tmp['created_at']      = $el->created_at->toDateTimeString();
                 $tmp['tag_id']          = $el->tag_id;
