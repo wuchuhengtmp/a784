@@ -20,4 +20,7 @@
     - [我的充值和提现](withdraAndPutup.md)
     - [提现申请](withdrap.md)
 
+- [视频截图](thumbnails.md)
+
+
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Transformers\VideosTransformer;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\Api\PostVideoRequest;
 use App\Models\{
@@ -183,8 +184,9 @@ class VideosController extends Controller
        DB::beginTransaction();
        try{
            $Post = $Post::create($data); 
+           $image = isset($Request->image) ? $Request->image : env('DEFAULT_IMG');
            $Image = Images::create([
-               'url'=> $Request->image,
+               'url'=> $image,
                'from'=> 2
            ]);
            $PostsImage = Db::table('post_image')->insert([
@@ -268,5 +270,40 @@ class VideosController extends Controller
                 $data['count'] =  $Posts->total();
             }
             return $this->responseData($data);
+    }
+
+    /**
+     * 视频截图
+     *
+     */
+    public function transferByUrl(Request $Request)
+    {
+        $Request->validate([
+            'video_url' => 'required'
+        ], [
+            'video_url.required' => '视频链接参数video_url不能为空'
+        ]);
+        $ffmpeg = \FFMpeg\FFMpeg::create(array(
+        'ffmpeg.binaries' => '/usr/bin/ffmpeg',
+        'ffprobe.binaries' => '/usr/bin/ffprobe',
+        'timeout' => 0, // The timeout for the underlying process
+        'ffmpeg.threads' => 12, // The number of threads that FFMpeg should use
+        ), @$logger);
+
+        $video = $ffmpeg->open($Request->video_url);
+        $microtime = (explode('.', microtime(true)))[1];
+        $save_name = './uploads/frame_'. date("Y-m-d-H-i-s", time()) ."-{$microtime}".'.jpg';
+        $result = $video
+        ->frame(\FFMpeg\Coordinate\TimeCode::fromSeconds(1))
+        ->save($save_name);
+        $file_handle = fopen($save_name, 'r');
+        $file_content = fread($file_handle, filesize($save_name));
+        // 上传到七牛
+        $disk = Storage::disk('qiniu');
+        $disk->put(substr($save_name, 1), $file_content);
+        $CDNUrl = $disk->getUrl(substr($save_name, 1));
+        return $this->responseData([
+            'thumbnails'   => $CDNUrl
+        ]);
     }
 }

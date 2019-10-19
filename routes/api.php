@@ -245,8 +245,8 @@ $api->version('v1', [
         $api->get('accountLogs', 'AccountLogsController@index');
         // 提现申请
         $api->post('withdraw', 'AccountLogsController@withdrawStore');
-        // 获取评论的回复
-
+        // 视频文件截图
+        $api->post('videos/thumbnails', 'VideosController@transferByUrl');
     }); 
     // 支付宝回调请求 
     $api->post('pays/alipay/natify', 'PayController@notify');
