@@ -39,7 +39,8 @@ class VideosController extends Controller
                     (SELECT COUNT(*) FROM favorites WHERE favorites.post_id = posts.id ) AS favories_count,
                     posts.clicks,
                     posts.title,
-                    posts.duration
+                    posts.duration,
+                    posts.video_url
                 ")
                 ) 
             ->whereNull('posts.deleted_at')
@@ -289,7 +290,6 @@ class VideosController extends Controller
         'timeout' => 0, // The timeout for the underlying process
         'ffmpeg.threads' => 12, // The number of threads that FFMpeg should use
         ), @$logger);
-
         $video = $ffmpeg->open($Request->video_url);
         $microtime = (explode('.', microtime(true)))[1];
         $save_name = './uploads/frame_'. date("Y-m-d-H-i-s", time()) ."-{$microtime}".'.jpg';

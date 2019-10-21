@@ -25,3 +25,4 @@ tag
 test.php
 /public/logs/alipay.log
 server.log
+/public/uploads/frame*.jpg
