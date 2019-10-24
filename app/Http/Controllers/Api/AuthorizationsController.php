@@ -88,7 +88,7 @@ class AuthorizationsController extends Controller
                 $member = Members::where('phone', $verifyData['phone'])->first();
                 if (!$member) {
                     $Image = Images::create([
-                        'url' =>  'http://cdn.hbbhsjz.cn/public/qZtrObTsSnlaN29nRt44cj3FP5NJNpHwasXkPMAe.jpeg'
+                        'url' =>  env('DEFAULT_AVATAR')
                     ]); 
                     $member = Members::create([
                         'phone'=> $verifyData['phone'],
