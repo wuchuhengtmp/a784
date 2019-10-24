@@ -196,6 +196,7 @@ class FollowsController extends Controller
                 $tmp['post_id']        = $el->id;
                 $tmp['created_at']     = $el->created_at->toDateTimeString();
                 $tmp['nickname']       = $el->member->nickname;
+                $tmp['member_id']      = $el->member_id;
                 $tmp['avatar']         = $this->transferUrl($el->member->avatar->url);
                 $tmp['content_type']   = $el->content_type;
                 $tmp['comments_count'] = $el->comments_count;
@@ -229,6 +230,7 @@ class FollowsController extends Controller
                         /* dump($comment_el->toArray()); */
                         if (isset($tmp_comment))  unset($tmp_comment);
                         $tmp_comment['nickname']   = $comment_el->member->nickname;
+                        $tmp_comment['member_id']   = $comment_el->member->id;
                         $tmp_comment['avatar']     = $this->transferUrl($comment_el->member->avatar->url);
                         $tmp_comment['created_at'] = $comment_el->created_at->toDateTimeString();
                         $tmp_comment['id']         = $comment_el->id;
@@ -249,6 +251,7 @@ class FollowsController extends Controller
                             if (isset($tmp_comment))  unset($tmp_reply);
                             foreach($Replies as $k=>$reply_el) {
                                 $tmp_reply['nickname']   = $reply_el->member->nickname;
+                                $tmp_reply['member_id']   = $reply_el->member_id;
                                 $tmp_reply['avatar']     = $this->transferUrl($reply_el->member->avatar->url);
                                 $tmp_reply['created_at'] = $reply_el->created_at->toDateTimeString();
                                 $tmp_reply['id']         = $reply_el->id;
@@ -260,6 +263,7 @@ class FollowsController extends Controller
                             }
                         }
                         $tmp['comments']['data'][] = $tmp_comment;
+                        break;
                     }
                     $tmp['comments']['count'] = $comments->total();
                 }

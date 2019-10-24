@@ -454,6 +454,7 @@ class AnswersController extends Controller
                 $tmp_answer_comments['count'] = $hasReplies->total();
                 foreach($hasReplies as $k=>$reply){
                     $tmp_answer_reply['nickname']      = $reply->member->nickname;
+                    $tmp_answer_reply['member_id']      = $reply->member->id;
                     $tmp_answer_reply['id']            = $reply->id;
                     $tmp_answer_reply['avatar']        = $this->transferUrl($reply->member->avatar->url);
                     $tmp_answer_reply['pid']           = $reply->pid;
