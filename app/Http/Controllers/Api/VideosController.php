@@ -143,21 +143,21 @@ class VideosController extends Controller
         $data = [];
         if ($Comments)  {
             foreach($Comments as $el){
-                $tmp['nickname'] = $el->member->nickname;
-                $tmp['avatar']   = $this->transferUrl($el->member->avatar->url);
-                $money = AccountLogs::getMaxBetweenTimeByUid($el->member->id,  time() - 60*60*24*365);
-                $fans = MemberFollow::countFansBYUid($el->member->id);
-                $has_level = Levels::getLevelByFansAndMony($fans, $money);
-                $tmp['id'] = $el->id;
-                $tmp['pid'] = $el->pid;
-                $tmp['level']  = $has_level ? $has_level->name : null;
-                $tmp['content'] = $el->content;
+                $tmp['nickname']   = $el->member->nickname;
+                $tmp['avatar']     = $this->transferUrl($el->member->avatar->url);
+                $money             = AccountLogs::getMaxBetweenTimeByUid($el->member->id,  time() - 60*60*24*365);
+                $fans              = MemberFollow::countFansBYUid($el->member->id);
+                $has_level         = Levels::getLevelByFansAndMony($fans, $money);
+                $tmp['id']         = $el->id;
+                $tmp['pid']        = $el->pid;
+                $tmp['level']      = $has_level ? $has_level->name : null;
+                $tmp['content']    = $el->content;
                 $tmp['created_at'] = $el->created_at->toArray()['formatted'];
-                $tmp['likes'] = $el->likes_count;
-                $tmp['is_like'] = CommentLikes::isLike($el->id, $this->user()->id);
-                $tmp['is_author']  = $el->post_id == $Request->id ? true : false;
-                $tmp['full_path'] = $el->order_weight;
-                $data[] = $tmp;
+                $tmp['likes']      = $el->likes_count;
+                $tmp['is_like']    = CommentLikes::isLike($el->id, $this->user()->id);
+                $tmp['is_author']  = $el->post->member_id  == $el->member_id ? true : false;
+                $tmp['full_path']  = $el->order_weight;
+                $data[]            = $tmp;
             }
         }
         $data = $this->_arrToTree($data); 

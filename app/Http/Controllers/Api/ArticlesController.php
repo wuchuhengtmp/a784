@@ -111,6 +111,7 @@ class ArticlesController extends Controller
                 ->get();
             foreach($comments as $el){
                 $tmp['nickname']   = $el->member->nickname;
+                $tmp['member_id']  = $el->member_id;
                 $tmp['avatar']     = $this->transferUrl($el->member->avatar->url);
                 $money             = AccountLogs::getMaxBetweenTimeByUid($el->member->id,  time() - 60*60*24*365);
                 $fans              = MemberFollow::countFansBYUid($el->member->id);
@@ -123,7 +124,7 @@ class ArticlesController extends Controller
                 $tmp['likes']      = CommentLikes::where('comment_id', $el->id)->count();
                 $tmp['is_like']    = CommentLikes::isLike($el->id, $this->user()->id);
                 $tmp['full_path']  = $el->order_weight;
-                $tmp['is_author']  = $el->post_id == $Request->post_id ? true : false;
+                $tmp['is_author']  = $el->post->member_id == $el->member_id ? true : false;
                 $data['comments'][]  = $tmp;
             }
             $data['comments'] = $data['comments'] ? $this->_arrToTree($data['comments']) : [];

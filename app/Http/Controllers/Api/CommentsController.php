@@ -102,7 +102,7 @@ class CommentsController extends Controller
                 $tmp['avatar']      = $el->member->avatar->url;
                 $tmp['level']       = Members::getLevelNameByMemberId($el->member_id);
                 $tmp['likes_count'] = $el->likes_count;
-                $tmp['is_author']   = $el->post_id == $Request->post_id ? true : false;
+                $tmp['is_author']   = $el->post->member_id == $el->member_id? true : false;
                 $tmp['is_like']     = CommentLikes::isLike($el->id, $this->user()->id);
                 $tmp['children']    = [];
                 // 子评论 
@@ -124,7 +124,7 @@ class CommentsController extends Controller
                     foreach($subComments as $suK=>$subEl) {
                         $sub_tmp['id']          = $subEl->id;
                         $sub_tmp['content']     = $subEl->content;
-                        $sub_tmp['is_author']       = $subEl->post_id == $Request->post_id ? true : false;
+                        $sub_tmp['is_author']       = $subEl->post->member_id == $subEl->member_id? true : false;
                         $sub_tmp['created_at']  = $subEl->created_at->toDateTimeString();
                         $sub_tmp['member_id']   = $subEl->member_id;
                         $sub_tmp['avatar']      = $subEl->member->avatar->url;
@@ -165,7 +165,7 @@ class CommentsController extends Controller
             foreach($Replies as $k => $v) {
                 $tmp['id']          = $v->id;
                 $tmp['content']     = $v->content;
-                $tmp['is_author']       = $v->post_id == $Request->post_id ? true : false;
+                $tmp['is_author']   = $v->post->member_id == $v->member_id ? true : false;
                 $tmp['created_at']  = $v->created_at->toDateTimeString();
                 $tmp['member_id']   = $v->member_id;
                 $tmp['avatar']      = $v->member->avatar->url;
@@ -173,8 +173,8 @@ class CommentsController extends Controller
                 $tmp['likes_count'] = Comments::countLike($v->id);
                 $tmp['is_like']     = CommentLikes::isLike($v->id, $this->user()->id);
                 $tmp['nickname']    = $v->member->nickname;
-                $tmp['PTOC'] = $k === 0 ? $v->member->nickname. ' 回复 ' . $hasComment->member->nickname: $v->member->nickname. ' 回复 ' . $Replies[--$k]->member->nickname;
-                $result['data'][]      = $tmp;
+                $tmp['PTOC']        = $k === 0 ? $v->member->nickname. ' 回复 ' . $hasComment->member->nickname: $v->member->nickname. ' 回复 ' . $Replies[--$k]->member->nickname;
+                $result['data'][]   = $tmp;
             }
         } 
         $result['count'] = $Replies->total();
