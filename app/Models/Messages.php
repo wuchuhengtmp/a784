@@ -361,20 +361,20 @@ class Messages extends BaseModel
             'count'      => ''
         ];
         $hasData = self::where('be_like_member_id', $be_like_member_id)
-            ->where('type', 5)
+            ->whereIn('type', [5,6])
             ->where('is_readed', 0)
             ->count();
         if ($hasData) {
             $result['count'] = $hasData;
             $news = self::where('be_like_member_id', $be_like_member_id)
-                ->where('type', 5)
+                ->whereIn('type', [5, 6])
                 ->where('is_readed', 0)
                 ->orderBy('created_at', 'desc')
-                ->first(['system_message_detail_id', 'created_at']);
+                ->first(['system_message_detail_id', 'created_at', 'type']);
             $detail = SystemMessageDetails::where('id', $news->system_message_detail_id)
                 ->first('title');
             $result['title'] = $detail->title;
-            $result['type']  = 5;
+            $result['type']  = $news->type;
             $result['created_at'] = $news->created_at->toDateTimeString();
         }
         return $result;

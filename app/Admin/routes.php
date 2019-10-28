@@ -22,4 +22,5 @@ Route::group([
     $router->resource('configs', ConfigsController::class);
     $router->resource('statement', StatementController::class);
     $router->resource('withdraw', withDrawController::class); 
+    $router->resource('user-messages', UserMessagesController::class);
 });

@@ -10,7 +10,8 @@ use App\Models\{
     PostLikes,
     CommentLikes,
     Comments,
-    Favorites
+    Favorites,
+    Messages
 };
 
 class Members extends Authenticatable implements JWTSubject
@@ -253,6 +254,13 @@ class Members extends Authenticatable implements JWTSubject
         
     }
 
-
+    /**
+     * 关联用户消息
+     *
+     */
+    public function message()
+    {
+        return $this->hasMany(Messages::class, 'be_like_member_id', 'id');
+    }
 }
 

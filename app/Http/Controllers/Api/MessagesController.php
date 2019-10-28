@@ -35,7 +35,7 @@ class MessagesController extends Controller
     public function update(Request $Request)
     {
         $Request->validate([
-            'type' => 'in:1,2,3,4,5'
+            'type' => 'in:1,2,3,4,5,6'
         ]);
         Messages::where('be_like_member_id', $this->user()->id)
             ->where('type', $Request->type)
@@ -51,12 +51,21 @@ class MessagesController extends Controller
     {
         $result = [];
         $Request->validate([
-            'type' => 'required|in:1,2,3,4,5'
+            'type' => 'required|in:1,2,3,4,5,6'
         ]);
-        $Messages = Messages::where('be_like_member_id', $this->user()->id)
-            ->where('type', $Request->type)
-            ->orderBy('id', 'desc')
-            ->paginate(18);
+         
+        if (in_array($Request->type, [1,2,3,4])) {
+            $Messages = Messages::where('be_like_member_id', $this->user()->id)
+                ->where('type', $Request->type)
+                ->orderBy('id', 'desc')
+                ->paginate(18);
+        }
+        if (in_array($Request->type, [5,6])) {
+            $Messages = Messages::where('be_like_member_id', $this->user()->id)
+                ->whereIn('type', [5,6])
+                ->orderBy('id', 'desc')
+                ->paginate(18);
+        }
         if($Messages->isEmpty()) return $this->responseData($result);
         // 非系统消息
         if (in_array($Request->type, [1,2,3,4])) {
@@ -79,13 +88,14 @@ class MessagesController extends Controller
             }
         }
         // 系统消息
-        if ($Request->type == 5) {
+        if (in_array($Request->type, [5,6])) {
             foreach($Messages as $el) {
                 $tmp['title']      = $el->systemMessageDetail->title;
-                $tmp['url']        = $el->systemMessageDetail->avatar->url;
+                $tmp['url']        = $el->systemMessageDetail->avatar->url ?? '';
                 $tmp['id']         = $el->systemMessageDetail->id;
                 $tmp['created_at'] = $el->created_at->toDateTimeString();
-                $result['data'][] = $tmp;
+                $tmp['type']       = $el->type;
+                $result['data'][]  = $tmp;
                 $el->update(['is_readed' => 1]);
             }
         }

@@ -188,13 +188,13 @@ class WebsocketTest {
         $conn = self::getPdoInstance();
         $sql = "
             SELECT
-                    count(id) as count
+                count(id) as count
             FROM
-                    messages M
+                messages M
             WHERE
-                    be_like_member_id = $member_id
+                be_like_member_id = $member_id
             AND is_readed = 0
-            AND type = 5
+            AND type IN(5,6)
             ORDER BY id desc
             LIMIT 1 ";
         $data = $conn->query($sql)->fetch();
@@ -203,19 +203,20 @@ class WebsocketTest {
         $sql = "
             SELECT
             S.title,
-            S.created_at
+            S.created_at,
+            M.type
             FROM
-                    messages M
+                messages M
             INNER JOIN system_message_details S ON S.id = M.system_message_detail_id
             WHERE
-                    M.be_like_member_id = $member_id
+                M.be_like_member_id = $member_id
             AND M.is_readed = 0
-            AND M.type = 5
+            AND M.type IN(5,6)
             ORDER BY M.id desc
             LIMIT 1";
         $Message = $conn->query($sql)->fetch();
         $result['title'] = $Message['title'];
-        $result['type'] = 5;
+        $result['type'] = $Message['type'];
         $result['created_at'] = $Message['created_at'];
         return $result;
     }
