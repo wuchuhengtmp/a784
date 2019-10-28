@@ -152,7 +152,7 @@ EOT;
                 }
                 return new Table(['ID', '标题'], $data);
             });
-        $grid->balance('龙币');
+        $grid->balance('龙币')->editable();
         $grid->level('等级')->display(function(){
             $money = AccountLogs::getMaxBetweenTimeByUid($this->id,  time() - 60*60*24*365);
             $fans = MemberFollow::countFansBYUid($this->id);
@@ -244,6 +244,7 @@ EOT;
         $form->text('email', '邮件')->rules('email');
         $form->text('weixin', '微信号');
         $form->text('school', '毕业学校');
+        $form->number('balance', '龙 币');
         $form->text('professional', '专业');
         $form->text('department', '院系');
         $form->text('age', '年龄')->rules('required|numeric');
