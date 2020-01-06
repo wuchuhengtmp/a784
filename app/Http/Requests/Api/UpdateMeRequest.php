@@ -14,19 +14,19 @@ class UpdateMeRequest extends FormRequest
     public function rules()
     {
         return [
-            'nickname'        => 'filled|string',
+            'nickname'        => 'string',
             'sign'            => 'string',
-            'sex'             => 'filled|numeric|in:1,2',
-            'age'             => 'filled|numeric|gte:1|lt:140',
-            'job'             => 'filled|numeric|in:1,2',
-            'born'            => 'filled|date',
-            'weixin'          => 'filled|string',
-            'school'          => 'filled|string',
-            'department'      => 'filled|string',
-            'professional'    => 'filled|string',
-            'education_id'    => 'filled|numeric|exists:educations,id',
+            'sex'             => 'numeric|in:1,2',
+            'age'             => 'numeric|gte:1|lt:140',
+            'job'             => 'numeric|in:1,2',
+            'born'            => 'date',
+            'weixin'          => 'string',
+            'school'          => 'string',
+            'department'      => 'string',
+            'professional'    => 'string',
+            'education_id'    => 'numeric|exists:educations,id',
             'email'           => 'email',
-            'start_school_at' => 'filled|date',
+            'start_school_at' => 'date',
             'hobby'           => 'string',
             'password'        => 'string'
         ];

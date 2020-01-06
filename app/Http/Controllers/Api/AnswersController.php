@@ -34,13 +34,15 @@ class AnswersController extends Controller
         if ($Posts) {
             $tmp_data = [];
             foreach($Posts as $el) {
-                $tmp['title'] = $el->title;
-                $tmp['nickname'] = $el->member->nickname;
-                $tmp['member_id'] = $el->member->id;
-                $tmp['created_at'] = $el->created_at->toDateTimeString();
-                $tmp['id'] = $el->id;
-                $tmp['avatar'] = isset($el->member->avatar->url) ? $this->transferUrl($el->member->avatar->url) : '';
-                $tmp['answer_comments_count'] =  $el->answer_comments_count;
+                if ($el->member) {
+                    $tmp['title'] = $el->title;
+                    $tmp['nickname'] = $el->member->nickname;
+                    $tmp['member_id'] = $el->member->id;
+                    $tmp['created_at'] = $el->created_at->toDateTimeString();
+                    $tmp['id'] = $el->id;
+                    $tmp['avatar'] = isset($el->member->avatar->url) ? $this->transferUrl($el->member->avatar->url) : env('DEFAULT_AVATAR');
+                    $tmp['answer_comments_count'] =  $el->answer_comments_count;
+                }
                 $tmp_data[] = $tmp;
             }
         $data['data']  = $tmp_data;
@@ -94,7 +96,7 @@ class AnswersController extends Controller
         $data['id']                    = $hasData->id;
         $data['title']                 = $hasData->title;
         $data['nickname']              = $hasData->member->nickname;
-        $data['avatar']                = isset($hasData->member->avatar->url) ? $this->transferUrl($hasData->member->avatar->url) : '';
+        $data['avatar']                = isset($hasData->member->avatar->url) ? $this->transferUrl($hasData->member->avatar->url) : env("DEFAULT_AVATAR");
         $data['answer_comments_count'] = $hasData->answer_comments_count;
         $data['member_id']             = $hasData->member->id;
         $data['is_follow']             = in_array($hasData->member->id, $my_follow_ids);
@@ -110,9 +112,9 @@ class AnswersController extends Controller
             foreach($hasData->answers as $el) {
                 $tmp['member_id'] = $el->member_id;
                 $tmp['id']         = $el->id;
-                $tmp['nickname']  = $el->member->nickname;
+                $tmp['nickname']  = $el->member->nickname ?? '';
                 $tmp['content']   = $el->content;
-                $tmp['avatar']    = $this->transferUrl($el->member->avatar->url);
+                $tmp['avatar']    = isset($el->member->avatar->url) ? $this->transferUrl($el->member->avatar->url) : env('DEFAULT_AVATAR');
                 $hasLevel         = Members::getlevelInfoByMemberId($el->member_id);
                 $tmp['level']     = $hasLevel ?  $hasLevel->name : null;
                 $tmp['is_follow'] = in_array($el->member_id, $my_follow_ids);
@@ -132,8 +134,8 @@ class AnswersController extends Controller
                     foreach ($comments as $answerComments)  {
                         $tmp_answer_comments['nickname']      = $answerComments->member->nickname;
                         $tmp_answer_comments['id']            = $answerComments->id;
-                        $tmp_answer_comments['avatar']        = $this->transferUrl($answerComments->member->avatar->url);
                         $tmp_answer_comments['pid']           = $answerComments->pid;
+                        $tmp_answer_comments['avatar']        = $answerComments->member->avatar->url ? $this->transferUrl($answerComments->member->avatar->url) : env('DEFAULT_AVATAR');
                         $tmp_answer_comments['created_at']    = $answerComments->created_at->toDateTimeString();
                         $hasLevel                             = Members::getlevelInfoByMemberId($answerComments->member->id);
                         $tmp_answer_comments['level']         = $hasLevel ? $hasLevel->name : null;
@@ -215,7 +217,7 @@ class AnswersController extends Controller
                 $tmp['id'] = $el->id;
                 $tmp['content'] = $el->content;
                 $tmp['nickname'] = $el->member->nickname;
-                $tmp['avatar']  = $el->member->avatar->url;
+                $tmp['avatar']  = $el->member->avatar->url ? $el->member->avatar->url : env('DEFAULT_AVATAR');
                 $tmp['answer_comments_count']  = $el->answer_comments_count;
                 $tmp['created_at'] = $el->created_at->toDateTimeString();
                 $tmp['post_id'] = $el->post_id;
@@ -277,7 +279,7 @@ class AnswersController extends Controller
                 $tmp['content']               = $el->content;
                 $tmp['answer_comments_count'] = $el->answer_comments_count;
                 $tmp['nickname']              = $el->member->nickname;
-                $tmp['avatar']                = $this->transferUrl($el->member->avatar->url);
+                $tmp['avatar']                =$el->member->avatar->url ?  $this->transferUrl($el->member->avatar->url) : env('DEFAULT_AVATAR');
                 $tmp['created_at']            = $el->created_at->toDateTimeString();
                 $tmp['post_id']               = $el->post_id;
                 $tmp_data[]                   = $tmp;
@@ -312,7 +314,7 @@ class AnswersController extends Controller
         $data['id']                    = $hasData->id;
         $data['title']                 = $hasData->title;
         $data['nickname']              = $hasData->member->nickname;
-        $data['avatar']                = $this->transferUrl($hasData->member->avatar->url);
+        $data['avatar']                = $hasData->member->avatar->url ? $this->transferUrl($hasData->member->avatar->url) : env('DEFAULT_AVATAR');
         $data['answer_comments_count'] = $hasData->answer_comments_count;
         $data['member_id']             = $hasData->member->id;
         $data['is_follow']             = in_array($hasData->member->id, $my_follow_ids);
@@ -355,7 +357,7 @@ class AnswersController extends Controller
                 $tmp['id']         = $el->id;
                 $tmp['nickname']  = $el->member->nickname;
                 $tmp['content']   = $el->content;
-                $tmp['avatar']    = $this->transferUrl($el->member->avatar->url);
+                $tmp['avatar']    = $el->member->avatar->url ? $this->transferUrl($el->member->avatar->url) : env('DEFAULT_AVATAR');
                 $hasLevel         = Members::getlevelInfoByMemberId($el->member_id);
                 $tmp['level']     = $hasLevel ?  $hasLevel->name : null;
                 $tmp['is_follow'] = in_array($el->member_id, $my_follow_ids);
@@ -384,7 +386,7 @@ class AnswersController extends Controller
         foreach($Comments as $Comm) {
             $tmp_answer_comments['nickname']      = $Comm->member->nickname;
             $tmp_answer_comments['id']            = $Comm->id;
-            $tmp_answer_comments['avatar']        = $this->transferUrl($Comm->member->avatar->url);
+            $tmp_answer_comments['avatar']        = $Comm->member->avatar->url ? $this->transferUrl($Comm->member->avatar->url) : env('DEFAULT_AVATAR');
             $tmp_answer_comments['pid']           = $Comm->pid;
             $tmp_answer_comments['created_at']    = $Comm->created_at->toDateTimeString();
             $hasLevel                             = Members::getlevelInfoByMemberId($Comm->member->id);
@@ -409,7 +411,7 @@ class AnswersController extends Controller
                 foreach($hasReplies as $k=>$reply){
                     $tmp_answer_reply['nickname']      = $reply->member->nickname;
                     $tmp_answer_reply['id']            = $reply->id;
-                    $tmp_answer_reply['avatar']        = $this->transferUrl($reply->member->avatar->url);
+                    $tmp_answer_reply['avatar']        = $reply->member->avatar->url ? $this->transferUrl($reply->member->avatar->url) : env('DEFAULT_AVATAR');
                     $tmp_answer_reply['pid']           = $reply->pid;
                     $tmp_answer_reply['created_at']    = $reply->created_at->toDateTimeString();
                     $hasLevel                     = Members::getlevelInfoByMemberId($reply->member->id); 
@@ -456,7 +458,7 @@ class AnswersController extends Controller
                     $tmp_answer_reply['nickname']      = $reply->member->nickname;
                     $tmp_answer_reply['member_id']      = $reply->member->id;
                     $tmp_answer_reply['id']            = $reply->id;
-                    $tmp_answer_reply['avatar']        = $this->transferUrl($reply->member->avatar->url);
+                    $tmp_answer_reply['avatar']        = $reply->member->avatar->url ? $this->transferUrl($reply->member->avatar->url) : env('DEFAULT_AVATAR');
                     $tmp_answer_reply['pid']           = $reply->pid;
                     $tmp_answer_reply['created_at']    = $reply->created_at->toDateTimeString();
                     $hasLevel                     = Members::getlevelInfoByMemberId($reply->member->id); 

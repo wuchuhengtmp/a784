@@ -29,7 +29,7 @@ class FavoritesController extends Controller
                     $tmp['id']              = $el->post->id;
                     $tmp['title']           = $el->post->title;
                     $tmp['video_url']       = $el->post->video_url;
-                    $tmp['image']           = $this->transferUrl($el->post->images[0]->url);
+                    $tmp['image']           = $el->post->images[0]->url ? $this->transferUrl($el->post->images[0]->url) : env('DEFAULT_AVATAR');
                     $tmp['clicks_count']    = $el->post->clicks;
                     $tmp['favorites_count'] = $el->post->favorites_count;
                     $data['data'][]                 = $tmp;
@@ -61,8 +61,8 @@ class FavoritesController extends Controller
                     $tmp['nickname']       = $el->post->member->nickname;
                     $tmp['created_at']     = $el->created_at->toDateTimeString();
                     $tmp['images']         = array_map(function($arr_el){
-                                                    return $this->transferUrl($arr_el['url'] );
-                                                }, $el->post->images->toArray());
+                        return $this->transferUrl($arr_el['url']);
+                    }, $el->post->images->toArray());
                     $tmp['clicks_count']   = $el->post->clicks;
                     $tmp['comments_count'] = $el->post->comments_count;
                     $data['data'][]        = $tmp;

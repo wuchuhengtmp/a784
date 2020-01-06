@@ -24,14 +24,21 @@ class FollowsController extends Controller
     public function index()
     {
         $myFollowMembers = MemberFollow::where('member_id', $this->user()->id)
+            ->orderby('id', 'desc') 
             ->get();
         if (!$myFollowMembers) return $this->responseError('还没有关注!');
         $my_follow_member_ids = array_column($myFollowMembers->toArray(), 'follow_member_id');
+        foreach($my_follow_member_ids as &$id) {
+           $Member = Members::where('id', $id)->get();
+           if ($Member->isEmpty()) {
+               unset($id);
+           }
+        }
         $Posts = Posts::whereIn('content_type', [1,2])->
             whereIn('member_id',$my_follow_member_ids)
             ->with(['member', 'comments', 'images'])
             ->withCount(['comments', 'likes'])
-            ->orderBy('created_at', 'desc')
+            ->orderBy('posts.created_at', 'desc')
             ->paginate(18);
         $data = []; 
         if ($Posts){ 
@@ -96,7 +103,7 @@ class FollowsController extends Controller
             $MyFollowMemerIds = $MyFollowMembers ? array_values(array_column($MyFollowMembers->toArray(), 'follow_member_id')) : [];
             foreach($FollowMembers as $el) {
                 $tmp['member_id'] = $el->member->id;
-                $tmp['avatar']    = $el->member->avatar->url ? $this->transferUrl($el->member->avatar->url) : null;
+                $tmp['avatar']    = $el->member->avatar->url ? $this->transferUrl($el->member->avatar->url) : env('DEFAULT_AVATAR');
                 $tmp['nickname']  = $el->member->nickname;
                 $has_level        = Members::getlevelInfoByMemberId($el->member->id);
                 $tmp['level']     = $has_level ? $has_level->name : null;
@@ -145,14 +152,16 @@ class FollowsController extends Controller
         $my_fans_ids = $MembersForFollowsMe ? array_column($MembersForFollowsMe->toArray(), 'member_id') : []; 
         if ($MyFollowMembers) {
             foreach($MyFollowMembers as $el) {
-                $tmp['member_id']       = $el->member->id;
-                $tmp['nickname']        = $el->member->nickname;
-                $tmp['sign']            = $el->member->sign;
-                $tmp['avatar']          = $this->transferUrl($el->member->avatar->url);
-                $tmp['is_fan_together'] = in_array($el->member->id, $my_fans_ids);
-                $hasLevel               = Members::getlevelInfoByMemberId($el->id);
-                $tmp['level']           = $hasLevel ? $hasLevel->name : null;
-                $data[]                 = $tmp;
+                if ($el->member){
+                    $tmp['member_id']       = $el->member->id;
+                    $tmp['nickname']        = $el->member->nickname;
+                    $tmp['sign']            = $el->member->sign;
+                    $tmp['avatar']          = $this->transferUrl($el->member->avatar->url);
+                    $tmp['is_fan_together'] = in_array($el->member->id, $my_fans_ids);
+                    $hasLevel               = Members::getlevelInfoByMemberId($el->id);
+                    $tmp['level']           = $hasLevel ? $hasLevel->name : null;
+                    $data[]                 = $tmp;
+                }
             }
             
         }
@@ -187,17 +196,21 @@ class FollowsController extends Controller
             whereIn('member_id',$my_follow_member_ids)
             ->with(['member', 'comments', 'images'])
             ->withCount(['comments', 'likes'])
+            ->orderby('posts.id', 'desc')
             ->paginate(18);
         $data = []; 
         if ($Posts){ 
             foreach($Posts as $el) {
                 if (isset($tmp)) unset($tmp);
+                if (!$el->member)  {
+                    continue;
+                }
                 $tmp['title']          = $el->title;
                 $tmp['post_id']        = $el->id;
                 $tmp['created_at']     = $el->created_at->toDateTimeString();
-                $tmp['nickname']       = $el->member->nickname;
+                $tmp['nickname']       = $el->member->nickname ?? '';
                 $tmp['member_id']      = $el->member_id;
-                $tmp['avatar']         = $this->transferUrl($el->member->avatar->url);
+                $tmp['avatar']         = $el->member->avatar->url ? $this->transferUrl($el->member->avatar->url) : env('DEFAULT_AVATAR');
                 $tmp['content_type']   = $el->content_type;
                 $tmp['comments_count'] = $el->comments_count;
                 $tmp['likes_count']    = $el->likes_count;
@@ -205,7 +218,7 @@ class FollowsController extends Controller
                 $tmp['Images']  = []; 
                 $tmp['is_like']      = Posts::isLike($this->user()->id, $el->member_id);
                 foreach($el->Images as $images_el) {
-                    $tmp['Images'][]         = $this->transferUrl($images_el->url);
+                    $tmp['Images'][]         = $images_el->url ? $this->transferUrl($images_el->url) : env('DEFAULT_AVATAR');
                 }
                 if ($el->content_type == 1) 
                 $tmp['video_url']     = $el->video_url;
@@ -227,9 +240,11 @@ class FollowsController extends Controller
                     $tmp['comments']['count'] = $comment_count;
                     /* dd($comments->toArray());exit; */
                     foreach($comments as $comment_el) {
-                        /* dump($comment_el->toArray()); */
                         if (isset($tmp_comment))  unset($tmp_comment);
-                        $tmp_comment['nickname']   = $comment_el->member->nickname;
+                        if (!$comment_el->member) {
+                            continue;
+                        }
+                        $tmp_comment['nickname']   = $comment_el->member->nickname ?? '';
                         $tmp_comment['member_id']   = $comment_el->member->id;
                         $tmp_comment['avatar']     = $this->transferUrl($comment_el->member->avatar->url);
                         $tmp_comment['created_at'] = $comment_el->created_at->toDateTimeString();
@@ -252,7 +267,7 @@ class FollowsController extends Controller
                             foreach($Replies as $k=>$reply_el) {
                                 $tmp_reply['nickname']   = $reply_el->member->nickname;
                                 $tmp_reply['member_id']   = $reply_el->member_id;
-                                $tmp_reply['avatar']     = $this->transferUrl($reply_el->member->avatar->url);
+                                $tmp_reply['avatar']     = $reply_el->member->avatar->url ? $this->transferUrl($reply_el->member->avatar->url) : env('DEFAULT_AVATAR');
                                 $tmp_reply['created_at'] = $reply_el->created_at->toDateTimeString();
                                 $tmp_reply['id']         = $reply_el->id;
                                 $tmp_reply['pid']        = $reply_el->pid;

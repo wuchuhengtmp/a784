@@ -6,6 +6,7 @@ use Closure;
 use App\Models\Tokens;
 use App\Models\Members;
 use Illuminate\Http\Response;
+
 class CheckToken
 {
     /**
@@ -21,6 +22,7 @@ class CheckToken
         $hasToken = Tokens::where('token', $token)
             ->where('status', 1)
             ->first();
+
         if (!$hasToken) {
             return response()->json([
                 'message' => '您的账号已经在别的设备上登录了',
@@ -60,7 +62,7 @@ class CheckToken
                         $time_len = intval((time() - $timestamp) / (60 * 60 * 24));
                         $result = $time_len . '天';
                     } else if (($timestamp + 60 * 60 * 24 * 365) > time()) {
-                        $time_len = (time() - $timestamp ) / (60 * 60 * 24 * 31);
+                        $time_len = intval((time() - $timestamp ) / (60 * 60 * 24 * 31));
                         $result = $time_len . '月';
                     }
                     return $result . '前';

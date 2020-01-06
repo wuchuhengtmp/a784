@@ -70,28 +70,34 @@ class MessagesController extends Controller
         // 非系统消息
         if (in_array($Request->type, [1,2,3,4])) {
             foreach($Messages as $el) {
+                // 标记为已读
+                $el->is_readed = 1;
+                $el->save();
+                if (!$el->member) {
+                    continue;
+                }
+                $tmp = [];
                 $tmp['member_id']  = $el->member->id;
                 $tmp['nickname']   = $el->member->nickname;
-                $tmp['avatar']     = $el->member->avatar->url;
+                $tmp['avatar']     = $el->member->avatar->url ?? env('DEFAULT_AVATAR');
                 $tmp['level']      = Members::getLevelNameByMemberId($el->member_id);
                 $tmp['content']    = $el->content;
                 $tmp['created_at'] = $el->created_at->toDateTimeString();
                 $tmp['post_id']    = $el->post_id;
                 $tmp['content_type'] = $el->content_type;
+                $tmp['is_readed']      = $el->is_readed;
                 // 关注消息
                 if ($Request->type == 2) {
                     $tmp['is_follow'] = in_array($el->member_id, Members::getFollowIds($el->be_like_member_id));
                 }
                 $result['data'][] = $tmp;
-                // 标记为已读
-                $el->update(['is_readed' => 1]);
             }
         }
         // 系统消息
         if (in_array($Request->type, [5,6])) {
             foreach($Messages as $el) {
                 $tmp['title']      = $el->systemMessageDetail->title;
-                $tmp['url']        = $el->systemMessageDetail->avatar->url ?? '';
+                $tmp['url']        = $el->systemMessageDetail->avatar->url ?? env('DEFAULT_AVATAR');
                 $tmp['id']         = $el->systemMessageDetail->id;
                 $tmp['created_at'] = $el->created_at->toDateTimeString();
                 $tmp['type']       = $el->type;

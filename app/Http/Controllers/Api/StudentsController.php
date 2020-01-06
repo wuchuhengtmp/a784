@@ -46,11 +46,12 @@ class StudentsController extends Controller
                 $tmp = [];
                 $tmp['id']              = $el->id;
                 $tmp['title']           = $el->title;
+                $tmp['title']           = $el->title;
                 $tmp['nickname']        = $el->member->nickname ?? '';
                 $tmp['content_type']    = $el->content_type;
                 $tmp['created_at']      = $el->created_at->toDateTimeString();
                 $tmp['tag_id']          = $el->tag_id;
-                $tmp['avatar']          = $el->member->avatar->url ??  '';
+                $tmp['avatar']          = $el->member->avatar->url ??  env('DEFAULT_AVATAR');
                 $tmp['comments_count']  = $el->comments_count ;
                 $tmp['images']          = array_map(function($image) {
                     return $this->transferUrl($image['url']);
@@ -58,6 +59,9 @@ class StudentsController extends Controller
                 if ($el->content_type  == 1) {
                     $tmp['video_url'] = $el->video_url;
                     $tmp['duration'] = $el->duration;
+                }
+                if ($el->content_type == 2) {
+                    $tmp['content'] = $el->content;
                 }
                 $data[] = $tmp;
             }

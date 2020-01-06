@@ -99,7 +99,7 @@ class CommentsController extends Controller
                 $tmp['created_at']  = $el->created_at->toDateTimeString();
                 $tmp['member_id']   = $el->member_id;
                 $tmp['nickname']    = $el->member->nickname;
-                $tmp['avatar']      = $el->member->avatar->url;
+                $tmp['avatar']      = $el->member->avatar->url ?? env("DEFAULT_AVATAR");
                 $tmp['level']       = Members::getLevelNameByMemberId($el->member_id);
                 $tmp['likes_count'] = $el->likes_count;
                 $tmp['is_author']   = $el->post->member_id == $el->member_id? true : false;
@@ -127,7 +127,7 @@ class CommentsController extends Controller
                         $sub_tmp['is_author']       = $subEl->post->member_id == $subEl->member_id? true : false;
                         $sub_tmp['created_at']  = $subEl->created_at->toDateTimeString();
                         $sub_tmp['member_id']   = $subEl->member_id;
-                        $sub_tmp['avatar']      = $subEl->member->avatar->url;
+                        $sub_tmp['avatar']      = $subEl->member->avatar->url ?? env('DEFAULT_AVATAR');
                         $sub_tmp['level']       = Members::getLevelNameByMemberId($subEl->member_id);
                         $sub_tmp['likes_count'] = $subEl->likes_count;
                         $sub_tmp['is_like']     = CommentLikes::isLike($subEl->id, $this->user()->id);
@@ -168,7 +168,7 @@ class CommentsController extends Controller
                 $tmp['is_author']   = $v->post->member_id == $v->member_id ? true : false;
                 $tmp['created_at']  = $v->created_at->toDateTimeString();
                 $tmp['member_id']   = $v->member_id;
-                $tmp['avatar']      = $v->member->avatar->url;
+                $tmp['avatar']      = $v->member->avatar->url ?? env('DEFAULT_AVATAR');
                 $tmp['level']       = Members::getLevelNameByMemberId($v->member_id);
                 $tmp['likes_count'] = Comments::countLike($v->id);
                 $tmp['is_like']     = CommentLikes::isLike($v->id, $this->user()->id);
@@ -179,5 +179,24 @@ class CommentsController extends Controller
         } 
         $result['count'] = $Replies->total();
         return $this->responseData($result);
+    }
+
+    /**
+     * 删除
+     *
+     */
+    public function destroy($id)
+    {
+        $Comment = Comments::where('id', $id)
+            ->where('member_id', $this->user()->id)
+            ->first();
+        if (!$Comment) {
+            return $this->responseError('没有这条评论或这不是你的评论');
+        }
+        if ($Comment->delete()) {
+            return $this->responseSuccess();
+        } else {
+            return $this->responseError('删除失败');
+        }
     }
 }

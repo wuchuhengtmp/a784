@@ -105,6 +105,8 @@ $api->version('v1', [
         $api->post('comments/{comment_id}', 'CommentsController@replyStore')
             ->where(['comment_id' => '[0-9]+'])
             ->name('api.comments.replystore');
+        // 删除评论
+        $api->delete('comments/{comment_id}', 'CommentsController@destroy');
         //搜索用户
         $api->get('search/user', 'SearchController@searchByUser')->name('api.search.user');
         // 老师首页
@@ -183,6 +185,10 @@ $api->version('v1', [
         // 点赞视频和文章
         $api->post('posts/likes/{post_id}', 'LikesController@store')
             ->where(['post_id'=> '[0-9]+']);
+        // 删除资源
+        $api->delete('posts/{post_id}', 'PostController@desctroy')
+            ->where(['post_id'=> '[0-9]+']);
+
         $api->delete('posts/likes/{post_id}', 'LikesController@destroy')
             ->where(['post_id'=> '[0-9]+']);
         // 点赞文章和视频评论
@@ -205,8 +211,6 @@ $api->version('v1', [
         $api->get('messages', 'MessagesController@send');
         // 消息标记为已读取
         $api->patch('messages', 'MessagesController@update');
-        // 测试
-        $api->get('test', 'TestController@index');
         // 收藏
         $api->post('favorites/posts/{post_id}', 'FavoritesController@postStore'); 
         // 取消收藏
@@ -248,6 +252,8 @@ $api->version('v1', [
         // 视频文件截图
         $api->post('videos/thumbnails', 'VideosController@transferByUrl');
     }); 
+    // 测试
+    $api->post('test', 'TestController@index');
     // 支付宝回调请求 
     $api->post('pays/alipay/natify', 'PayController@notify');
     $api->get('pays/alipay/natify', 'PayController@notify');

@@ -26,8 +26,9 @@ class FansController extends Controller
             // 用户自己本身注的ids 
             $MyFollowMemerIds = $MyFollowMembers ? array_values(array_column($MyFollowMembers->toArray(), 'follow_member_id')) : [];
             foreach($FollowMembers as $el) {
+                if (!$el->memberFollow) continue;
                 $tmp['member_id'] = $el->memberFollow->id;
-                $tmp['avatar']    = $el->memberFollow->avatar->url ? $this->transferUrl($el->member->avatar->url) : null;
+                $tmp['avatar']    = $el->memberFollow->avatar ? $this->transferUrl($el->memberFollow->avatar->url) : env('DEFAULT_AVATAR');
                 $tmp['nickname']  = $el->memberFollow->nickname;
                 $has_level        = Members::getlevelInfoByMemberId($el->memberFollow->id);
                 $tmp['level']     = $has_level ? $has_level->name : null;
@@ -54,10 +55,11 @@ class FansController extends Controller
         $my_follow_member_ids = $MeFollowMembers ? array_column($MeFollowMembers->toArray(), 'follow_member_id') : [];
         if ($MyFans) {
             foreach($MyFans as $el) {
+                if (!$el->memberFollow) continue;
                 $tmp['member_id']       = $el->member_id;
                 $tmp['nickname']        = $el->memberFollow->nickname;
                 $tmp['sign']            = $el->memberFollow->sign;
-                $tmp['avatar']          = $this->transferUrl($el->member->avatar->url);
+                $tmp['avatar']          = $el->memberFollow->avatar->url ? $this->transferUrl($el->memberFollow->avatar->url) : '';
                 $tmp['is_fan_together'] = in_array($el->memberFollow->id, $my_follow_member_ids);
                 $hasLevel               = Members::getlevelInfoByMemberId($el->id);
                 $tmp['level']           = $hasLevel ? $hasLevel->name : null;

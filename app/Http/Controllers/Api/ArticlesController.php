@@ -93,10 +93,12 @@ class ArticlesController extends Controller
         $data['content']     = $Posts -> content;
         $data['comment_count'] = Comments::where('post_id', $Request->post_id)->count();
         $data['created_at']  = $Posts->created_at->toDateTimeString();
-        $data['nickname']    = $Posts->member->nickname;
-        $data['avatar']      = isset($Posts->member->avatar->url) ? $this->transferUrl($Posts->member->avatar->url) : '';
+        $data['nickname']    = $Posts->member->nickname ?? '';
+        $data['avatar']      = $Posts->member->avatar->url ? $this->transferUrl($Posts->member->avatar->url) : env('DEFAULT_AVATAR');
         $data['is_follow']   = in_array($Posts->member_id, $my_follow_ids);
         $data['is_like']     = in_array($Posts->id, $my_like_post_ids);
+        $data['likes']       = $Posts->likes->count();
+        $data['favorites']   = $Posts->favorites->count();
         $data['is_favorite'] = in_array($Posts->id, $my_favorie_ids);
         $data['images']      = array_map(function($el){
             return $el['url'];
@@ -110,9 +112,12 @@ class ArticlesController extends Controller
                 ->orderBy('order_weight')
                 ->get();
             foreach($comments as $el){
-                $tmp['nickname']   = $el->member->nickname;
+                if (!$el->member) {
+                    continue;
+                }
+                $tmp['nickname']   = $el->member->nickname ?? '';
                 $tmp['member_id']  = $el->member_id;
-                $tmp['avatar']     = $this->transferUrl($el->member->avatar->url);
+                $tmp['avatar']     = $el->member->avatar->url ? $this->transferUrl($el->member->avatar->url) : env('DEFAULT_AVATAR');
                 $money             = AccountLogs::getMaxBetweenTimeByUid($el->member->id,  time() - 60*60*24*365);
                 $fans              = MemberFollow::countFansBYUid($el->member->id);
                 $has_level         = Levels::getLevelByFansAndMony($fans, $money);
@@ -149,15 +154,16 @@ class ArticlesController extends Controller
         if ($Posts) {
             $tmp_data = [];
             foreach($Posts as $el) {
-                $tmp['id'] = $el->id;
-                $tmp['title'] = $el->title;
-                $tmp['nickname'] = isset($el->member->nickname) ? $el->member->nickname : '';
-                $tmp['created_at'] = $el->created_at->toDateTimeString();
-                $tmp['images'] = array_map(function($el){
-                    return $this->transferUrl($el['url']);
+                $tmp['id']             = $el->id;
+                $tmp['title']          = $el->title;
+                $tmp['nickname']       = isset($el->member->nickname) ? $el->member->nickname : '';
+                $tmp['created_at']     = $el->created_at->toDateTimeString();
+                $tmp['images']         = array_map(function($el){
+                    return $this->transferUrl($el['url']) ? $el['url'] : env('DEFAULT_AVATAR');
                 }, $el->images->toArray());
                 $tmp['comments_count'] = $el->comments_count;
-                $tmp_data[] = $tmp;
+                $tmp['content']        = $el->content;
+                $tmp_data[]            = $tmp;
             } 
             $data['data'] = $tmp_data;
             $data['count'] =  $Posts->total();
@@ -227,7 +233,7 @@ class ArticlesController extends Controller
         $data['content']     = $Posts -> content;
         $data['created_at']  = $Posts->created_at->toDateTimeString();
         $data['nickname']    = $Posts->member->nickname;
-        $data['avatar']      = $this->transferUrl($Posts->member->avatar->url);
+        $data['avatar']      = $Posts->member->avatar->url ? $this->transferUrl($Posts->member->avatar->url) : env('DEFAULT_AVATAR');
         $data['is_follow']   = in_array($Posts->member_id, $my_follow_ids);
         $data['is_like']     = in_array($Posts->id, $my_like_post_ids);
         $data['is_favorite'] = in_array($Posts->id, $my_favorie_ids);

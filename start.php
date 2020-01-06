@@ -31,7 +31,7 @@ class WebsocketTest {
                     // 登记连接
                     $Redis = $this->getRedisInstance();
                     $Redis->hset(getenv('REDIS_PREFIX') . $member_id, $frame->fd, $data['token']);
-                    $Redis->hset(getenv('REDIS_PREFIX') . 'relevence', $frame->fd, $data['member_id']);
+                    $Redis->hset(getenv('REDIS_PREFIX') . 'relevence', $frame->fd, $member_id);
                     $data_format['likes']           = self::getMessageData($member_id, 1);
                     $data_format['follows']         = self::getMessageData($member_id, 2);
                     $data_format['comments']        = self::getMessageData($member_id, 3);

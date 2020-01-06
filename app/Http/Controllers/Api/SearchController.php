@@ -33,7 +33,7 @@ class SearchController extends Controller
             $MyFollowMemerIds = $MyFollowMembers ? array_values(array_column($MyFollowMembers->toArray(), 'follow_member_id')) : [];
             foreach($search_result as $el) {
                 $tmp['member_id'] = $el->id;
-                $tmp['avatar']    = $el->avatar->url ? $this->transferUrl($el->avatar->url) : null;
+                $tmp['avatar']    = isset($el->avatar->url) ? $this->transferUrl($el->avatar->url) : env('DEFAULT_AVATAR');
                 $tmp['nickname']  = $el->nickname;
                 $has_level        = Members::getlevelInfoByMemberId($el->id);
                 $tmp['level']     = $has_level ? $has_level->name : null;

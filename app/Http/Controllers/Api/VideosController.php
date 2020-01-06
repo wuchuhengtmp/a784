@@ -87,12 +87,12 @@ class VideosController extends Controller
             return $this->response->errorNotFound();
         // :xxx bug 可能有url
          if (isset($Post->member->avatar->url))  {
-            $url = $Post->member->avatar->url;
+            $url = $Post->member->avatar->url ?? env('DEFAULT_AVATAR');
             if(!isset(parse_url($url)['host'])) {
                $Post->member->avatar->url = env('APP_URL')  . '/'  . $url;
             }
         } else {
-               $Post->member->avatar->url = '';
+               $Post->member->avatar->url = env('DEFAULT_AVATAR');
         }
         $like_count = PostLikes::where('post_id', $id)->count();
         $myLikePosts = PostLikes::where('member_id', $this->user()->id)->get('post_id');
@@ -106,7 +106,7 @@ class VideosController extends Controller
             'likes'           => $like_count,
             'total_commtents' => $Post->comments_count,
             'nickname'        => $Post->member->nickname,
-            'avatar'          => $Post->member->avatar->url,
+            'avatar'          => $Post->member->avatar->url ?? env("DEFAULT_AVATAR"),
             'is_favorite'     => Favorites::isFavorite($this->user()->id, $Post->id),
             'is_like'         => in_array($Post->id, $my_like_post_ids),
             'is_follow'       => in_array($Post->member_id, MemberFollow::getFollowMemberIdsByMmberId($this->user()->id)),
@@ -143,6 +143,9 @@ class VideosController extends Controller
         $data = [];
         if ($Comments)  {
             foreach($Comments as $el){
+                if (!$el->member) {
+                    continue;
+                }
                 $tmp['nickname']   = $el->member->nickname;
                 $tmp['avatar']     = $this->transferUrl($el->member->avatar->url);
                 $money             = AccountLogs::getMaxBetweenTimeByUid($el->member->id,  time() - 60*60*24*365);
@@ -179,9 +182,9 @@ class VideosController extends Controller
        $data['content_type'] = 1;
        $data['member_id']    = $this->user()->id;
        //获取时长
-       $videoInfo = json_decode(file_get_contents($Request->video . '?avinfo'), true);
+       /* $videoInfo = json_decode(file_get_contents($Request->video . '?avinfo'), true); */
        $day_timestamp = strtotime(date('Y-m-d', time()));
-       $data['duration'] = date('i:s', $day_timestamp + intval($videoInfo['streams'][0]['duration'])); 
+       /* $data['duration'] = date('i:s', $day_timestamp + intval($videoInfo['streams'][0]['duration'])); */ 
        DB::beginTransaction();
        try{
            $Post = $Post::create($data); 

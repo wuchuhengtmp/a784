@@ -87,11 +87,11 @@ class Controller extends BaseController
      */
     public function DNSupload(string $path)
     {
-       $url =  Storage::url($path); 
-       $disk = Storage::disk('qiniu');
-       $disk->put($path, file_get_contents(".".$url));
-       $full_path = str_replace(' ', '', $disk->getUrl($path));
-       return $full_path;
+        $url =  Storage::url($path); 
+        $disk = Storage::disk('qiniu');
+        $disk->put($path, file_get_contents(".".$url));
+        $full_path = str_replace(' ', '', $disk->getUrl($path));
+        return $full_path;
     }
 
     /**
@@ -107,7 +107,7 @@ class Controller extends BaseController
         $tmp = [];
         foreach($items as $k=>$el) {
             if ($k === 0 && $el['pid'] == 0) {
-               $tmp = $el; 
+                $tmp = $el; 
             } elseif ($k !== 0 && $el['pid'] == 0 ) {
                 $tmp['children'] = $tmp['children'] ?? [];
                 $result[] = $tmp;
@@ -130,21 +130,21 @@ class Controller extends BaseController
 
         }
         return $result;
-         /* $map  = []; */
-         /* $tree = []; */
-         /* foreach ($items as &$it){ */
-         /*   $el = &$it; */
-         /*   $el['children'] = []; */
-         /*   $map[$it['id']] = &$it; */
-         /* }  //数据的ID名生成新的引用索引树 */
-         /* foreach ($items as &$it){ */
-         /*   $parent = &$map[$it[$pid]]; */
-         /*   if($parent) { */
-         /*     $parent['children'][] = &$it; */
-         /*   }else{ */
-         /*     $tree[] = &$it; */
-         /*   } */
-         /* } */
-         /* return $tree; */
+        /* $map  = []; */
+        /* $tree = []; */
+        /* foreach ($items as &$it){ */
+        /*   $el = &$it; */
+        /*   $el['children'] = []; */
+        /*   $map[$it['id']] = &$it; */
+        /* }  //数据的ID名生成新的引用索引树 */
+        /* foreach ($items as &$it){ */
+        /*   $parent = &$map[$it[$pid]]; */
+        /*   if($parent) { */
+        /*     $parent['children'][] = &$it; */
+        /*   }else{ */
+        /*     $tree[] = &$it; */
+        /*   } */
+        /* } */
+        /* return $tree; */
     }
 }

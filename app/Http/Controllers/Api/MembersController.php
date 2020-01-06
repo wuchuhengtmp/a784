@@ -10,7 +10,9 @@ use App\Http\Requests\Api\UpdateMeRequest;
 use App\Models\{
     Members,
     Posts,
-    MemberFollow
+    MemberFollow, 
+    Images,
+    PostImages
 };
 use App\Transformers\MemberTransformer;
 
@@ -75,7 +77,7 @@ class MembersController extends Controller
             ->with(['education'])
             ->withCount(['fans','commentLikes', 'follows'])
             ->first();
-        $Member->avatar_url = $Member->avatar->url ? $this->transferUrl($Member->avatar->url) : '';
+        $Member->avatar_url = $Member->avatar ? $this->transferUrl($Member->avatar->url) : env('DEFAULT_AVATAR');
         $hasLevel = Members::getlevelInfoByMemberId($this->user()->id);
         $Member->level = $hasLevel ? $hasLevel->name : null;
         $Member->education_level  = $Member->education->name ?? null;
@@ -121,7 +123,7 @@ class MembersController extends Controller
             ->withCount(['fans','commentLikes', 'follows' ])
             ->first();
         $Member->is_follow = in_array($Member->id, $my_follow_member_ids);
-        $Member->avatar_url = $this->transferUrl($Member->avatar->url);
+        $Member->avatar_url = $Member->avatar->url ? $this->transferUrl($Member->avatar->url) : env('DEFAULT_AVATAR');
         $hasLevel = Members::getlevelInfoByMemberId($this->user()->id);
         $Member->level = $hasLevel ? $hasLevel->name : null;
         $Member->education_level  = $Member->education->name ?? null;
@@ -175,17 +177,24 @@ class MembersController extends Controller
         $Request->password        && $input['password']        = bcrypt($Request->password);
         $Request->location        && $input['location']        = $Request->location;
         $Request->next_plan       && $input['next_plan']       = $Request->next_plan;
+        $is_update = 0;
+        if ($Request->avatar_url) {
+            $avatar = $Request->avatar_url;
+            $Member      = Members::with(['avatar'])->where('id', $this->user->id)->first();
+            $Member->avatar->url = $avatar;
+            $is_update = $Member->avatar->save();
+        }
+        
         if (!isset($input)) return  $this->responseError('请输入参数');
 
         $is_save = DB::table('members')
             ->where('id', $this->user()->id)
             ->update($input);
-        if ($is_save ) 
+        if ($is_save || $is_update)  {
             return $this->responseSuccess();
-        else 
+        } else {
             return $this->responseError('更新失败，您提交的内容没有进行任何变动');
-            
-            
+        }
     }
 
     /**
@@ -195,10 +204,24 @@ class MembersController extends Controller
      */
     public function avatarUpdate(Request $Request)
     {
+        $Request->validate([
+            'avatar' => 'required'
+        ], [
+            'avatar.required' => '头像的url不能为空'
+        ]);
         $Member      = Members::with(['avatar'])->where('id', $this->user->id)->first();
-        $Avatar      = $Member->avatar;
-        $Avatar->url = $this->DNSupload($Request->file('avatar')->store('public'));
-        $is_save     = $Avatar->save();
+        if ($Member->avatar) {
+            $Avatar      = $Member->avatar;
+            $Avatar->url = $Request->avatar;
+            $is_save     = $Avatar->save();
+        } else {
+            $Images = new Images();
+            $Images->url = $Request->avatar;
+            $Images->from = 2;
+            $Images->save();
+            $Member->avatar_image_id = $Images->id;
+            $is_save = $Member->save();
+        }
         return  $is_save ? $this->responseSuccess() : $this->responseError();
     }
 

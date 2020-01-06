@@ -31,6 +31,7 @@ class ArticlesController extends AdminController
             $actions->disableEdit();
             $actions->disableView();
         });
+        $grid->model()->orderby('id', 'DESC');
         $grid->disableCreateButton();
         $grid->model()->where('content_type', 2);
         $grid->column('id', 'Id');
@@ -74,7 +75,7 @@ class ArticlesController extends AdminController
                 if (!$comments->isEmpty()) {
                     foreach($comments as $el) {
                         $tmp['id'] = $el->id; 
-                        $tmp['nickname'] = $el->member->name;
+                        $tmp['nickname'] = $el->member->name ?? '';
                         $tmp['content'] = $el->content;
                         $tmp['created_at'] = $el->created_at->toArray()['formatted'];
                         $data[] = $tmp;
